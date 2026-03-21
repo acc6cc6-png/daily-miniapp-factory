@@ -55,48 +55,40 @@ function renderFactory() {
     return;
   }
 
-  const plan = factory.todayPlan ?? {};
-  setText("#factory-title", plan.name || "今日方案");
-  setText("#factory-lead", factory.summary || "");
-  setText("#factory-eyebrow", "Daily Miniapp Build");
-  setText("#generated-badge", `${factory.generatedAt} 更新`);
-  setText("#window-banner", `信号窗口：${factory.windowLabel}`);
-  setText("#sidebar-window", factory.windowLabel);
-  setText("#plan-name", plan.name || "今日自动生成小程序方案");
-  setText("#plan-positioning", plan.positioning || "");
-  setText("#core-need", plan.coreNeed || "");
-  setText("#why-today", plan.whyToday || "");
-  setText("#audience-copy", plan.audience || "");
-  setText("#promotion-copy", plan.promotion || "");
-  setText("#monetization-copy", plan.monetization || "");
-  setText("#frontend-copy", plan.implementation?.frontend || "");
-  setText("#backend-copy", plan.implementation?.backend || "");
-  setText("#plan-mode", modeLabel(factory.mode));
+  const dailyBrief = factory.dailyBrief ?? {};
 
-  renderScoreGrid(factory.scores || {});
-  renderTextList("#market-basis", plan.marketBasis || []);
-  renderFeatureList("#features-list", plan.coreFeatures || [], "title", "detail");
-  renderFeatureList("#pages-list", plan.pageStructure || [], "name", "purpose");
-  renderTextList("#interaction-list", plan.interactionLogic || []);
-  renderPills("#platform-list", plan.implementation?.platforms || []);
+  setText("#factory-title", factory.title || "今日可造清单");
+  setText("#factory-lead", factory.summary || "");
+  setText("#factory-eyebrow", "Daily Creation Board");
+  setText("#generated-badge", `${factory.generatedAt || "-"} 更新`);
+  setText("#window-banner", `信号窗口：${factory.windowLabel || "-"}`);
+  setText("#sidebar-window", factory.windowLabel || "-");
+  setText("#headline-copy", dailyBrief.headline || "");
+  setText("#policy-copy", dailyBrief.buildPolicy || "");
+  setText("#schedule-copy", dailyBrief.schedule || "");
+  setText("#mode-copy", modeLabel(factory.mode));
+  setText("#mode-chip", modeLabel(factory.mode));
+
+  renderScoreGrid(factory.scorecard || {});
+  renderTextList("#shift-list", dailyBrief.marketShifts || []);
+  renderCreations(factory.todayCreations || []);
   renderEvidence(factory.evidenceSignals || []);
-  renderCandidates(factory.candidateBoard || []);
   renderEngine(factory.engine || {});
   toggleLatestIndicator();
 }
 
-function renderScoreGrid(scores) {
+function renderScoreGrid(scorecard) {
   const container = document.querySelector("#score-grid");
   if (!container) {
     return;
   }
 
   const items = [
-    { label: "需求强度", value: scores.demand ?? "-", tone: "is-bullish" },
-    { label: "上线速度", value: scores.launch ?? "-", tone: "is-watch" },
-    { label: "传播潜力", value: scores.viral ?? "-", tone: "is-bullish" },
-    { label: "商业价值", value: scores.commercial ?? "-", tone: "is-bearish" },
-    { label: "小程序适配", value: scores.fit ?? "-", tone: "is-watch" },
+    { label: "变化强度", value: scorecard.change ?? "-", tone: "is-watch" },
+    { label: "需求缺口", value: scorecard.demand ?? "-", tone: "is-bullish" },
+    { label: "可造性", value: scorecard.build ?? "-", tone: "is-bullish" },
+    { label: "想象空间", value: scorecard.bold ?? "-", tone: "is-watch" },
+    { label: "AI 杠杆", value: scorecard.ai ?? "-", tone: "is-bullish" },
   ];
 
   container.innerHTML = items
@@ -111,51 +103,206 @@ function renderScoreGrid(scores) {
     .join("");
 }
 
-function renderFeatureList(selector, items, titleKey, bodyKey) {
-  const container = document.querySelector(selector);
+function renderCreations(items) {
+  const container = document.querySelector("#creation-list");
   if (!container) {
     return;
   }
 
   container.innerHTML = items
-    .map(
-      (item) => `
-        <article class="factory-card">
-          <h4>${escapeHtml(item[titleKey] || "")}</h4>
-          <p>${escapeHtml(item[bodyKey] || "")}</p>
-        </article>
-      `,
-    )
+    .map((item, index) => renderCreationCard(item, index))
     .join("");
+
+  container.querySelectorAll("[data-copy-target]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const target = document.getElementById(button.getAttribute("data-copy-target"));
+      if (!target) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(target.textContent || "");
+        const original = button.textContent;
+        button.textContent = "已复制";
+        window.setTimeout(() => {
+          button.textContent = original;
+        }, 1400);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+  });
 }
 
-function renderTextList(selector, items) {
-  const container = document.querySelector(selector);
-  if (!container) {
-    return;
-  }
+function renderCreationCard(item, index) {
+  const promptId = `creation-prompt-${index}`;
+  return `
+    <article class="factory-card creation-card">
+      <div class="section-head creation-head">
+        <div>
+          <p class="eyebrow">Creation ${String(index + 1).padStart(2, "0")}</p>
+          <h3>${escapeHtml(item.name || "")}</h3>
+          <p class="signal-copy">${escapeHtml(item.tagline || "")}</p>
+        </div>
+        <div class="pill-list creation-metrics">
+          <span class="source-pill source-pill--static"><span>${escapeHtml(item.aiBuildability || "")}</span></span>
+          <span class="source-pill source-pill--static"><span>需求 ${escapeHtml(item.scores?.demand ?? "-")}</span></span>
+          <span class="source-pill source-pill--static"><span>可造 ${escapeHtml(item.scores?.buildability ?? "-")}</span></span>
+          <span class="source-pill source-pill--static"><span>大胆 ${escapeHtml(item.scores?.boldness ?? "-")}</span></span>
+        </div>
+      </div>
 
-  container.innerHTML = items
-    .map(
-      (item, index) => `
-        <article class="stack-item">
-          <span class="linkage-index">${String(index + 1).padStart(2, "0")}</span>
-          <p>${escapeHtml(item)}</p>
-        </article>
-      `,
-    )
-    .join("");
-}
+      <div class="summary-stack">
+        <div class="summary-block">
+          <span class="summary-label">因为发生了什么</span>
+          <p>${escapeHtml(item.because || "")}</p>
+        </div>
+        <div class="summary-block">
+          <span class="summary-label">所以今天造什么</span>
+          <p>${escapeHtml(item.createWhat || "")}</p>
+        </div>
+        <div class="summary-block">
+          <span class="summary-label">为什么现在就能做</span>
+          <p>${escapeHtml(item.whyNow || "")}</p>
+        </div>
+      </div>
 
-function renderPills(selector, items) {
-  const container = document.querySelector(selector);
-  if (!container) {
-    return;
-  }
+      <div class="creation-grid">
+        <div class="creation-column">
+          <p class="section-mini-title">适合谁用</p>
+          <div class="summary-block">
+            <p>${escapeHtml(item.targetUsers || "")}</p>
+          </div>
+        </div>
+        <div class="creation-column">
+          <p class="section-mini-title">典型场景</p>
+          <div class="summary-block">
+            <p>${escapeHtml(item.scene || "")}</p>
+          </div>
+        </div>
+      </div>
 
-  container.innerHTML = items
-    .map((item) => `<span class="source-pill source-pill--static"><span>${escapeHtml(item)}</span></span>`)
-    .join("");
+      <div class="creation-grid">
+        <div class="creation-column">
+          <p class="section-mini-title">核心模块</p>
+          <div class="card-list card-list--compact">
+            ${(item.coreModules || [])
+              .map(
+                (module) => `
+                  <article class="factory-card factory-card--compact">
+                    <h4>${escapeHtml(module.title || "")}</h4>
+                    <p>${escapeHtml(module.detail || "")}</p>
+                  </article>
+                `,
+              )
+              .join("")}
+          </div>
+        </div>
+        <div class="creation-column">
+          <p class="section-mini-title">页面结构</p>
+          <div class="card-list card-list--compact">
+            ${(item.pageStructure || [])
+              .map(
+                (page) => `
+                  <article class="factory-card factory-card--compact">
+                    <h4>${escapeHtml(page.name || "")}</h4>
+                    <p>${escapeHtml(page.purpose || "")}</p>
+                  </article>
+                `,
+              )
+              .join("")}
+          </div>
+        </div>
+      </div>
+
+      <div class="creation-grid">
+        <div class="creation-column">
+          <p class="section-mini-title">关键流程</p>
+          <div class="stack-list">
+            ${(item.workflow || [])
+              .map(
+                (line, workflowIndex) => `
+                  <article class="stack-item">
+                    <span class="linkage-index">${String(workflowIndex + 1).padStart(2, "0")}</span>
+                    <p>${escapeHtml(line)}</p>
+                  </article>
+                `,
+              )
+              .join("")}
+          </div>
+        </div>
+        <div class="creation-column">
+          <p class="section-mini-title">首发实现</p>
+          <div class="summary-stack creation-delivery">
+            <div class="summary-block">
+              <span class="summary-label">首版边界</span>
+              <p>${escapeHtml(item.firstVersion || "")}</p>
+            </div>
+            <div class="summary-block">
+              <span class="summary-label">前端</span>
+              <p>${escapeHtml(item.delivery?.frontend || "")}</p>
+            </div>
+            <div class="summary-block">
+              <span class="summary-label">后端</span>
+              <p>${escapeHtml(item.delivery?.backend || "")}</p>
+            </div>
+            <div class="summary-block">
+              <span class="summary-label">首发平台</span>
+              <div class="pill-list">
+                ${(item.delivery?.platforms || [])
+                  .map((platform) => `<span class="source-pill source-pill--static"><span>${escapeHtml(platform)}</span></span>`)
+                  .join("")}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="creation-grid">
+        <div class="creation-column">
+          <p class="section-mini-title">怎么推广</p>
+          <div class="summary-block">
+            <p>${escapeHtml(item.launchPlan || "")}</p>
+          </div>
+        </div>
+        <div class="creation-column">
+          <p class="section-mini-title">怎么赚钱</p>
+          <div class="summary-block">
+            <p>${escapeHtml(item.monetization || "")}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-block prompt-block">
+        <div class="prompt-toolbar">
+          <span class="summary-label">给 AI 的接力提示词</span>
+          <button class="ghost-button" type="button" data-copy-target="${escapeAttribute(promptId)}">复制提示词</button>
+        </div>
+        <pre class="prompt-box" id="${escapeAttribute(promptId)}">${escapeHtml(item.aiBuildPrompt || "")}</pre>
+      </div>
+
+      <div class="creation-source-list">
+        ${(item.sources || [])
+          .map(
+            (source) => `
+              <article class="factory-card factory-card--compact">
+                <div class="pulse-meta">
+                  <span class="pulse-category">${escapeHtml(source.groupLabel || "")}</span>
+                  <span class="story-signal is-watch">${escapeHtml(source.source || "")}</span>
+                </div>
+                <h4>${escapeHtml(source.title || "")}</h4>
+                <p>${escapeHtml(source.reason || "")}</p>
+                <div class="story-footer">
+                  <span class="story-source">${escapeHtml(source.publishedAt || "时间未标注")}</span>
+                  <a class="story-link" href="${escapeAttribute(source.url || "#")}" target="_blank" rel="noreferrer">原文</a>
+                </div>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+    </article>
+  `;
 }
 
 function renderEvidence(items) {
@@ -184,35 +331,8 @@ function renderEvidence(items) {
     .join("");
 }
 
-function renderCandidates(items) {
-  const container = document.querySelector("#candidate-list");
-  if (!container) {
-    return;
-  }
-
-  container.innerHTML = items
-    .map(
-      (item) => `
-        <article class="factory-card">
-          <div class="pulse-meta">
-            <span class="pulse-category">${escapeHtml(String(item.score ?? "-"))}</span>
-            <span class="story-signal is-bullish">候选方向</span>
-          </div>
-          <h4>${escapeHtml(item.name || "")}</h4>
-          <p>${escapeHtml(item.positioning || "")}</p>
-          <p class="signal-copy">${escapeHtml(item.note || "")}</p>
-        </article>
-      `,
-    )
-    .join("");
-}
-
 function renderEngine(engine) {
   const sourceContainer = document.querySelector("#engine-source-list");
-  const collection = document.querySelector("#collection-rules");
-  const quality = document.querySelector("#quality-rules");
-  const build = document.querySelector("#build-rules");
-
   if (sourceContainer) {
     sourceContainer.innerHTML = (engine.sources || [])
       .map(
@@ -234,6 +354,24 @@ function renderEngine(engine) {
   renderTextList("#build-rules", engine.buildRules || []);
 }
 
+function renderTextList(selector, items) {
+  const container = document.querySelector(selector);
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = items
+    .map(
+      (item, index) => `
+        <article class="stack-item">
+          <span class="linkage-index">${String(index + 1).padStart(2, "0")}</span>
+          <p>${escapeHtml(item)}</p>
+        </article>
+      `,
+    )
+    .join("");
+}
+
 function renderHistory() {
   const container = document.querySelector("#history-list");
   if (!container) {
@@ -241,7 +379,7 @@ function renderHistory() {
   }
 
   const items = [
-    { id: "latest", label: "最新方案", path: "latest", mode: "latest" },
+    { id: "latest", label: "最新结果", path: "latest", mode: "latest" },
     ...state.history.map((item) => ({ ...item, mode: "history" })),
   ];
 
@@ -251,7 +389,7 @@ function renderHistory() {
         <div class="history-entry">
           <span class="history-badge">${item.mode === "latest" ? "Latest" : "Archive"}</span>
           <div class="history-entry-copy">${escapeHtml(item.label)}</div>
-          <button class="history-entry-button" data-history-path="${escapeHtml(item.path)}" type="button">打开</button>
+          <button class="history-entry-button" data-history-path="${escapeAttribute(item.path)}" type="button">打开</button>
         </div>
       `,
     )
@@ -260,23 +398,25 @@ function renderHistory() {
   container.querySelectorAll("[data-history-path]").forEach((button) => {
     button.addEventListener("click", async () => {
       const path = button.getAttribute("data-history-path");
-      await loadEdition(path);
-      toggleHistory(false);
+      if (!path) {
+        return;
+      }
+
+      try {
+        if (path === "latest") {
+          state.digest = await fetchJson("./data/latest/digest.json");
+          state.usingLatest = true;
+        } else {
+          state.digest = await fetchJson(`./data/${path}`);
+          state.usingLatest = false;
+        }
+        renderFactory();
+        toggleHistory(false);
+      } catch (error) {
+        renderFactoryError(error);
+      }
     });
   });
-}
-
-async function loadEdition(path) {
-  try {
-    state.digest =
-      path === "latest"
-        ? await fetchJson("./data/latest/digest.json")
-        : await fetchJson(`./${path}`);
-    state.usingLatest = path === "latest";
-    renderFactory();
-  } catch (error) {
-    renderFactoryError(error);
-  }
 }
 
 function toggleHistory(open) {
@@ -284,34 +424,37 @@ function toggleHistory(open) {
   if (!modal) {
     return;
   }
+
   modal.classList.toggle("hidden", !open);
-  modal.setAttribute("aria-hidden", String(!open));
+  modal.setAttribute("aria-hidden", open ? "false" : "true");
 }
 
 function toggleLatestIndicator() {
-  const indicator = document.querySelector("#latest-indicator");
-  if (!indicator) {
+  const chip = document.querySelector("#latest-indicator");
+  if (!chip) {
     return;
   }
-  indicator.classList.toggle("hidden", !state.usingLatest);
+  chip.textContent = state.usingLatest ? "Latest" : "Archive";
 }
 
 function renderFactoryError(error) {
   console.error(error);
-  setText("#factory-title", "页面加载失败");
-  setText("#factory-lead", error?.message ?? "无法读取今日方案");
-  setText("#window-banner", "请确认 docs/data/latest/digest.json 已生成，并且包含 miniappFactory 字段。");
-  setText("#core-need", "如果这是历史快照，可能还未包含新的小程序方案结构。");
+  setText("#factory-title", "生成结果读取失败");
+  setText("#factory-lead", "请确认 docs/data/latest/digest.json 已生成，并且包含 miniappFactory 字段。");
+  setText("#window-banner", "当前无法读取今日可造清单。");
 }
 
 function modeLabel(mode) {
-  return mode === "ai" ? "AI 深挖" : "规则引擎";
+  if (mode === "ai") {
+    return "AI 强化";
+  }
+  return "规则引擎";
 }
 
 function setText(selector, value) {
-  const node = document.querySelector(selector);
-  if (node) {
-    node.textContent = value ?? "";
+  const element = document.querySelector(selector);
+  if (element) {
+    element.textContent = value || "";
   }
 }
 

@@ -15,29 +15,36 @@ except Exception:
 
 FACTORY_SOURCE_GROUPS: dict[str, tuple[str, ...]] = {
     "product": ("producthunt", "github-trending-today", "hackernews"),
-    "tech": ("36kr-quick", "36kr-renqi", "ithome", "techcrunch-ai", "cnbc-tech"),
-    "social": ("zhihu", "weibo", "bilibili-hot-search", "toutiao"),
+    "operator": ("36kr-quick", "36kr-renqi", "ithome", "techcrunch-ai", "cnbc-tech"),
+    "market": ("wallstreetcn-hot", "cls-hot", "cls-depth", "cnbc-business", "guardian-business"),
+    "demand": ("zhihu", "toutiao", "thepaper", "xueqiu-hotstock"),
 }
 
 SOURCE_GROUP_LABELS = {
     "product": "产品榜单与开发者社区",
-    "tech": "科技媒体与行业快讯",
-    "social": "中文热点与用户讨论",
+    "operator": "科技媒体与创业动向",
+    "market": "市场与商业变动",
+    "demand": "真实用户讨论与消费意图",
 }
 
 SOURCE_WEIGHTS = {
-    "producthunt": 1.4,
-    "github-trending-today": 1.35,
-    "hackernews": 1.3,
+    "producthunt": 1.45,
+    "github-trending-today": 1.4,
+    "hackernews": 1.35,
     "techcrunch-ai": 1.3,
-    "cnbc-tech": 1.15,
+    "cnbc-tech": 1.2,
     "36kr-renqi": 1.2,
     "36kr-quick": 1.1,
     "ithome": 1.05,
-    "zhihu": 1.15,
-    "weibo": 0.75,
-    "bilibili-hot-search": 0.8,
-    "toutiao": 0.85,
+    "wallstreetcn-hot": 1.25,
+    "cls-hot": 1.22,
+    "cls-depth": 1.28,
+    "cnbc-business": 1.18,
+    "guardian-business": 1.08,
+    "zhihu": 1.08,
+    "toutiao": 0.88,
+    "thepaper": 0.95,
+    "xueqiu-hotstock": 0.92,
 }
 
 NOISE_TERMS = (
@@ -49,10 +56,59 @@ NOISE_TERMS = (
     "演唱会",
     "明星",
     "八卦",
-    "狼队",
+    "电影票房",
+    "恋情",
     "ag",
-    "星期六",
+    "lol",
+    "cos",
+    "周边",
     "预告",
+    "抽卡",
+    "手游",
+)
+
+INTENT_TERMS = (
+    "用户",
+    "客户",
+    "商家",
+    "企业",
+    "卖家",
+    "创作者",
+    "团队",
+    "开发者",
+    "老板",
+    "岗位",
+    "求职",
+    "采购",
+    "转化",
+    "复购",
+    "流量",
+    "投放",
+    "成本",
+    "利润",
+    "收益",
+    "交付",
+    "需求",
+)
+
+PAIN_TERMS = (
+    "涨价",
+    "下滑",
+    "压力",
+    "难",
+    "太慢",
+    "缺",
+    "问题",
+    "焦虑",
+    "降本",
+    "提效",
+    "卡住",
+    "复杂",
+    "碎片化",
+    "分散",
+    "混乱",
+    "排队",
+    "等待",
 )
 
 COMMERCIAL_TERMS = (
@@ -60,259 +116,380 @@ COMMERCIAL_TERMS = (
     "商品",
     "售价",
     "客服",
-    "商家",
     "电商",
-    "卖家",
-    "用户",
-    "流量",
-    "转化",
-    "增长",
-    "部署",
-    "api",
+    "小店",
+    "私域",
+    "带货",
+    "会员",
     "订阅",
-    "成本",
     "收入",
     "盈利",
     "变现",
-    "shop",
-    "merchant",
+    "增长",
+    "线索",
+    "成交",
+    "复盘",
+    "运营",
+)
+
+CHANGE_TERMS = (
+    "发布",
+    "上线",
+    "开源",
+    "更新",
+    "升级",
+    "接入",
+    "开放",
+    "支持",
+    "推出",
+    "新增",
+    "定价",
+    "调价",
+    "政策",
+    "规则",
+    "平台",
 )
 
 ACTION_TERMS = (
-    "发布",
-    "上线",
-    "写",
-    "publish",
-    "translate",
-    "deploy",
-    "导入",
     "生成",
-    "助手",
+    "自动",
+    "workflow",
     "agent",
-    "automation",
-    "voice",
-    "video",
+    "copilot",
+    "助手",
+    "搭建",
+    "部署",
+    "发布",
+    "翻译",
+    "剪辑",
+    "比价",
+    "训练",
+    "改写",
+    "推荐",
 )
 
-HOT_TERMS = (
-    "热搜",
-    "热门",
-    "trending",
-    "top",
-    "爆款",
-    "排行",
-    "viral",
-    "trend",
-)
-
-WHY_TODAY_CLOSERS = {
-    "trend-content-studio": "这说明用户不是单纯想追热点，而是在找更快把热点变成可发内容的工具。",
-    "merchant-growth-copilot": "这说明商家不是只想知道发生了什么，而是想更快把热点和讨论转成成单素材。",
-    "video-translate-assistant": "这说明用户不是只想看懂内容，而是想更快把视频转成可直接发布的多语版本。",
-    "agent-workflow-launchpad": "这说明团队不是只想围观新 Agent，而是想更快把能力装配成业务流程。",
-    "device-compare-radar": "这说明用户在找更快完成换新决策、而不是继续在参数海里反复横跳的工具。",
-    "job-interview-lab": "这说明求职用户想要的不只是岗位信息，而是更快完成准备和复盘的训练工具。",
+DISPLAY_TERMS = {
+    "agent": "Agent",
+    "api": "API",
+    "workflow": "流程",
+    "automation": "自动化",
+    "copilot": "副驾",
+    "translate": "多语",
+    "subtitle": "字幕",
+    "video": "视频",
+    "跨境": "跨境",
+    "商家": "商家",
+    "电商": "电商",
+    "客服": "客服",
+    "私域": "私域",
+    "参数": "参数",
+    "价格": "价格",
+    "购机": "换新",
+    "简历": "简历",
+    "面试": "面试",
+    "求职": "求职",
+    "热点": "热点",
+    "内容": "内容",
+    "发布": "发布",
+    "调价": "调价",
+    "平台": "平台",
+    "规则": "规则",
+    "更新": "更新",
+    "开源": "开源",
+    "手机": "手机",
+    "汽车": "汽车",
+    "新品": "新品",
+    "offer": "Offer",
 }
 
+DEFAULT_PREFIXES = {
+    "change-translation-console": "平台",
+    "merchant-reaction-engine": "商家",
+    "agent-kit-foundry": "Agent",
+    "crossborder-delivery-relay": "多语",
+    "decision-intel-radar": "换新",
+    "career-acceleration-lab": "求职",
+}
 
-BLUEPRINTS: list[dict[str, Any]] = [
+THEMES: list[dict[str, Any]] = [
     {
-        "id": "trend-content-studio",
-        "name": "热点内容工坊",
-        "positioning": "把今天的热点自动拆成标题、脚本、封面和分发文案的轻量增长工具",
+        "id": "change-translation-console",
+        "name_suffix": "变化转译台",
+        "tagline": "把平台、产品和行业变化直接翻成今天要执行的动作包。",
+        "market_shift": "变化速度已经快过大多数团队的理解和执行速度。",
+        "demand_gap": "大家缺的不是又一篇新闻解读，而是今天该改什么、发什么、接什么的执行答案。",
+        "keywords": (
+            "涨价",
+            "调价",
+            "升级",
+            "更新",
+            "开放",
+            "接入",
+            "新规",
+            "规则",
+            "平台",
+            "api",
+            "发布",
+            "上线",
+            "workflow",
+            "agent",
+        ),
+        "negative_terms": ("足球", "歌手", "演员", "制裁", "伊朗", "冲突", "战争", "石油"),
+        "preferred_groups": ("market", "operator", "product"),
+        "base_scores": {"demand": 58, "buildability": 83, "boldness": 86, "ai": 90},
+        "target_users": "SaaS 创始人、运营负责人、私域操盘手、行业观察型团队。",
+        "scene": "每天早上看完变化后，30 分钟内自动生成动作清单、客户通知和内部待办。",
+        "first_version": "先做变化订阅、动作生成、通知模板 3 个模块，不碰复杂协同。",
+        "modules": [
+            {"title": "变化译码器", "detail": "把发布、涨价、规则调整、开放接口等变化统一拆成影响范围、风险点和可执行动作。"},
+            {"title": "动作包生成器", "detail": "自动生成客户通知、销售话术、Landing Page 修改建议和内部执行清单。"},
+            {"title": "行业模板库", "detail": "按 SaaS、私域、电商、本地服务等场景沉淀可复用模板。"},
+            {"title": "追踪看板", "detail": "记录变化已读、动作是否完成、后续是否需要二次跟进。"},
+        ],
+        "pages": [
+            {"name": "今日变化页", "purpose": "展示今天真正需要处理的变化，而不是铺满资讯。"},
+            {"name": "动作生成页", "purpose": "按角色生成客户通知、销售话术和内部待办。"},
+            {"name": "模板页", "purpose": "沉淀行业模板和常用动作包。"},
+            {"name": "追踪页", "purpose": "查看哪些变化已处理、哪些还在堆积。"},
+        ],
+        "workflow": [
+            "系统先把过去 36 小时的变化信号去重、分类、标记影响范围。",
+            "用户打开后直接看到今天必须处理的变化，而不是一屏新闻。",
+            "选中某条变化后，一键生成客户通知、执行清单和页面修改建议。",
+            "执行结果沉淀进模板库，下一次同类变化直接复用。",
+        ],
+        "frontend": "先做 H5 + 微信小程序的变化列表、动作模板和一键复制交付页，减少复杂输入。",
+        "backend": "后端用 FastAPI 聚合信号、调用模型做变化翻译、保存动作模板与执行记录。",
+        "distribution": "从 SaaS 创始人群、私域增长社群、行业操盘手群切入，以“每天 7 点给你今天该动的 3 件事”做传播。",
+        "monetization": "按行业专题和团队席位订阅收费，附加企业内部模板库增购。",
+        "prompt_goal": "做一个每天 7 点把行业变化翻译成动作包的产品首版",
+    },
+    {
+        "id": "merchant-reaction-engine",
+        "name_suffix": "生意动作机",
+        "tagline": "不是帮商家看热点，而是帮商家今天就把热点变成订单动作。",
+        "market_shift": "流量更碎、商品更同质，商家需要的是即时动作而不是更多灵感。",
+        "demand_gap": "市场在找能立刻变成文案、客服回复和活动页的执行工具。",
+        "keywords": (
+            "商家",
+            "电商",
+            "商品",
+            "客服",
+            "小店",
+            "团购",
+            "带货",
+            "私域",
+            "成交",
+            "转化",
+            "评论",
+            "优惠",
+            "活动",
+        ),
+        "negative_terms": ("球员", "演唱会", "股市"),
+        "preferred_groups": ("demand", "operator", "market"),
+        "base_scores": {"demand": 61, "buildability": 86, "boldness": 80, "ai": 88},
+        "target_users": "小商家、私域团购主理人、本地零售店主、轻电商品牌。",
+        "scene": "每天早上生成一套可直接发出去的活动动作包，不再临时想标题和话术。",
+        "first_version": "先做话题建议、文案生成、评论提炼，不碰复杂 ERP。",
+        "modules": [
+            {"title": "生意机会雷达", "detail": "把消费讨论、平台动向和热点话题合成今天可借力的销售切口。"},
+            {"title": "活动动作包", "detail": "自动产出活动标题、海报文案、客服快捷回复和社群口播稿。"},
+            {"title": "评论转卖点", "detail": "把用户评论和问答提炼成卖点、异议和 FAQ。"},
+            {"title": "复盘回收站", "detail": "记录哪些话术出单、哪些活动没反应，方便第二天继续优化。"},
+        ],
+        "pages": [
+            {"name": "今日动作页", "purpose": "展示今天最值得发的活动方向和推荐动作。"},
+            {"name": "商品工作台", "purpose": "管理商品卖点、差评、常见问题和素材。"},
+            {"name": "文案生成页", "purpose": "生成海报文案、活动标题、客服回复和社群话术。"},
+            {"name": "复盘页", "purpose": "记录活动结果，形成下一轮动作建议。"},
+        ],
+        "workflow": [
+            "系统合并消费讨论、产品动向和商家相关变化，识别今天值得借的切口。",
+            "用户选择商品后，系统生成活动文案、客服回复和社群口播稿。",
+            "生成内容一键复制出去，避免老板每天重写一遍。",
+            "活动结果回流后，系统给出明天继续跟进还是停止投放的建议。",
+        ],
+        "frontend": "优先做手机端单手可完成的商家工作台，重点是模板切换、快速复制和结果回看。",
+        "backend": "后端负责评论归因、热点匹配、模板管理和简单成效记录。",
+        "distribution": "从本地商家群、私域运营训练营、电商卖家群切入，用“今天直接能发的活动动作包”获客。",
+        "monetization": "按店铺数和动作包次数收费，高级版开放评论洞察与客服自动回复。",
+        "prompt_goal": "做一个帮商家在当天把热点变成订单动作的工具首版",
+    },
+    {
+        "id": "agent-kit-foundry",
+        "name_suffix": "装配厂",
+        "tagline": "把新 Agent、新 API、新开源能力翻成可卖、可跑的垂直小产品。",
+        "market_shift": "AI 能力发布越来越快，但真正能变成业务价值的装配层仍然稀缺。",
+        "demand_gap": "团队不是缺 Agent 新闻，而是缺一个能 1 小时拼出行业工作流的制造台。",
+        "keywords": (
+            "agent",
+            "workflow",
+            "automation",
+            "api",
+            "open source",
+            "开源",
+            "memory",
+            "deploy",
+            "coding",
+            "copilot",
+            "assistant",
+        ),
+        "negative_terms": ("歌手", "足球"),
+        "preferred_groups": ("product", "operator"),
+        "base_scores": {"demand": 55, "buildability": 79, "boldness": 91, "ai": 94},
+        "target_users": "一人公司、独立开发者、小团队产品经理、自动化顾问。",
+        "scene": "早上看到新能力，下午就能拼成一个垂直工作流 Demo 去试单。",
+        "first_version": "先做垂直模板市场、表单式节点配置、运行回放，不碰复杂权限体系。",
+        "modules": [
+            {"title": "行业模板市场", "detail": "直接提供销售跟进、客服总结、内容分发、报价整理等现成模板。"},
+            {"title": "节点装配器", "detail": "通过表单串起模型、知识源、Webhook、通知和输出格式。"},
+            {"title": "运行回放", "detail": "看到每次输入、输出和失败节点，方便快速改模板。"},
+            {"title": "交付打包器", "detail": "把模板导出成 H5、小程序骨架或可售卖的服务包。"},
+        ],
+        "pages": [
+            {"name": "模板首页", "purpose": "展示今天最值得拼装的垂直 Agent 模板。"},
+            {"name": "装配页", "purpose": "配置输入、模型、知识源和输出动作。"},
+            {"name": "运行回放页", "purpose": "查看执行记录和失败节点。"},
+            {"name": "交付页", "purpose": "导出 Demo、模板包和复用说明。"},
+        ],
+        "workflow": [
+            "系统先把新发布的 Agent / API / 开源能力聚合成可装配能力列表。",
+            "用户从模板首页挑一个最接近业务的方向进入装配页。",
+            "填入知识源和输出动作后，立即生成可运行 Demo。",
+            "跑通后将模板打包，继续卖给客户或做成自己的微 SaaS。",
+        ],
+        "frontend": "前端重点是模板卡片、节点配置和运行回放，首发更适合 H5 + 小程序轻配置台。",
+        "backend": "后端负责工作流编排、日志存储、模型调用、外部 API 对接和模板版本管理。",
+        "distribution": "从独立开发者社区、AI 自动化社群、产品经理群切入，用“今天就能拼一个能卖的 Agent”获客。",
+        "monetization": "按模板数、调用量和团队席位收费，另卖行业专用模板包。",
+        "prompt_goal": "做一个把新 AI 能力快速装配成垂直产品的系统首版",
+    },
+    {
+        "id": "crossborder-delivery-relay",
+        "name_suffix": "多语交付站",
+        "tagline": "把内容、多语、平台适配和交付包一次性做完。",
+        "market_shift": "跨平台分发与多语输出成本在下降，但多数团队的交付链路仍然断裂。",
+        "demand_gap": "用户不想再外包切字幕、改文案、做封面，他们想直接拿到可发布包。",
         "keywords": (
             "translate",
-            "visual",
+            "language",
+            "subtitle",
+            "voice",
             "video",
-            "publish",
-            "post",
-            "content",
-            "article",
-            "blog",
-            "ads",
-            "promotion",
-            "广告",
-            "脚本",
-            "文案",
-            "封面",
-            "热点",
-            "热搜",
-            "话题",
-            "多语言",
-            "assistant",
-            "creator",
+            "multilingual",
+            "跨境",
+            "出海",
+            "配音",
+            "字幕",
+            "localization",
         ),
-        "negative_terms": ("债市", "黄金", "制裁", "冲突", "逮捕"),
-        "preferred_groups": ("product", "tech", "social"),
-        "base_scores": {"demand": 54, "launch": 92, "viral": 88, "commercial": 82, "fit": 96},
-        "need": "创作者、品牌和小商家每天都知道要追热点，但从线索到标题、脚本、封面、平台改写这一段最耗时。",
-        "core_features": [
-            {"title": "热点拆题台", "detail": "把热榜、产品榜单和科技快讯自动归并成可跟进的话题包，并给出推荐切入角度。"},
-            {"title": "一键出内容", "detail": "基于选中的热点自动生成标题、短视频脚本、朋友圈文案、公众号导语和直播口播提纲。"},
-            {"title": "多平台改写", "detail": "同一份内容可切成微信、小红书、抖音、公众号等不同语气和长度版本。"},
-            {"title": "内容素材库", "detail": "保存热点、生成记录、封面文案和常用提示词，便于团队复用和复盘。"},
-        ],
-        "pages": [
-            {"name": "首页 / 今日机会", "purpose": "展示今日热点榜、机会分和推荐切入角度。"},
-            {"name": "选题详情页", "purpose": "查看热点摘要、适合人群、推荐内容形式和参考链接。"},
-            {"name": "内容生成页", "purpose": "选择平台模板后生成标题、脚本、封面文案和行动口号。"},
-            {"name": "素材库", "purpose": "管理已收藏热点、常用模板和历史生成记录。"},
-        ],
-        "interactions": [
-            "用户打开首页后先看到系统给出的今日热点机会榜。",
-            "点击某个热点后进入详情页，选择目标平台和内容形态。",
-            "系统生成标题、脚本、封面文案和 CTA，用户可继续改写或收藏。",
-            "生成结果进入素材库，后续可二次编辑、导出图片文案或复制发布。",
-        ],
-        "frontend": "首发用 Taro 或 uni-app 同时覆盖微信小程序和 H5，核心是热点卡片流、内容编辑器和模板切换组件。",
-        "backend": "后端用 FastAPI 或 Next.js API Routes，负责聚合热点、调用大模型生成文案、存储模板和用户历史。",
-        "audience": "内容创作者、私域运营、品牌新媒体、小商家老板。",
-        "promotion": "从公众号运营群、短视频训练营、私域操盘手社群切入，先用“今日热点一键成稿”做首波传播。",
-        "monetization": "基础版按日限次，专业版按月订阅，企业版可开放团队素材库和品牌模板。",
-    },
-    {
-        "id": "merchant-growth-copilot",
-        "name": "商家增长副驾",
-        "positioning": "把热点、商品评论和活动文案串起来的小店增长助手",
-        "keywords": ("商品", "售价", "山姆", "客服", "摊主", "广告", "电商", "商家", "转化", "小店", "带货", "团购", "私域"),
-        "negative_terms": ("球员", "战争", "债市"),
-        "preferred_groups": ("social", "tech"),
-        "base_scores": {"demand": 50, "launch": 88, "viral": 76, "commercial": 91, "fit": 93},
-        "need": "很多小商家知道热点和优惠在变，但不会把这些信号转成活动页、客服话术和成单文案。",
-        "core_features": [
-            {"title": "热点带货建议", "detail": "根据今天的热点和消费讨论推荐可蹭的活动切口与话术。"},
-            {"title": "评论提炼", "detail": "把用户评论和问答总结成卖点、疑虑和 FAQ。"},
-            {"title": "活动文案生成", "detail": "自动生成拼团文案、优惠页标题、社群海报文案和客服快捷回复。"},
-            {"title": "复盘看板", "detail": "记录活动表现，便于持续优化标题、促销和回复模板。"},
-        ],
-        "pages": [
-            {"name": "机会首页", "purpose": "显示今天值得借力的话题、平台情绪和推荐活动模板。"},
-            {"name": "商品工作台", "purpose": "管理商品卖点、差评摘要和用户疑问。"},
-            {"name": "文案生成页", "purpose": "生成活动标题、客服回复、社群海报文案。"},
-            {"name": "复盘页", "purpose": "查看历史活动、文案表现和复用建议。"},
-        ],
-        "interactions": [
-            "用户先选择店铺类型和主推商品。",
-            "系统结合热点与历史评论生成活动方向和转化建议。",
-            "用户选中模板后一键生成活动页文案、海报标题和客服话术。",
-            "发布后将数据回填到复盘页，形成下一轮优化素材。",
-        ],
-        "frontend": "前端重点做商品卡片、模板库和一键复制操作，保证老板手机上也能快速完成。",
-        "backend": "后端负责评论归因、热点推荐、模板管理和简单的成单事件统计。",
-        "audience": "本地零售店、小红书店主、私域团购商家、轻电商品牌。",
-        "promotion": "从本地商家群、私域运营社群和电商卖家训练营切入，以“活动文案 3 分钟出稿”做转化。",
-        "monetization": "按店铺数订阅，附加评论洞察包和客服自动回复包收费。",
-    },
-    {
-        "id": "video-translate-assistant",
-        "name": "视频多语翻译助手",
-        "positioning": "面向跨境卖家和创作者的视频字幕翻译、配音和封面文案工具",
-        "keywords": ("translate", "language", "subtitle", "voice", "video", "multilingual", "跨境", "出海", "配音", "字幕"),
         "negative_terms": ("债市", "冲突"),
-        "preferred_groups": ("product", "tech"),
-        "base_scores": {"demand": 48, "launch": 66, "viral": 84, "commercial": 87, "fit": 77},
-        "need": "跨境卖家和视频创作者需要更快地把中文内容转成多语种版本，但剪辑和配音外包太慢也太贵。",
-        "core_features": [
-            {"title": "字幕抽取", "detail": "上传视频后自动抽取音轨与字幕初稿。"},
-            {"title": "多语翻译", "detail": "一键生成英文、日文、韩文等字幕版本，并保留口语风格。"},
-            {"title": "配音脚本", "detail": "输出可直接录制的配音文本和封面标题建议。"},
-            {"title": "发布包导出", "detail": "导出字幕文件、短文案、封面文案和标签建议。"},
+        "preferred_groups": ("product", "operator", "market"),
+        "base_scores": {"demand": 53, "buildability": 71, "boldness": 84, "ai": 89},
+        "target_users": "跨境卖家、出海内容团队、短视频代运营、海外营销团队。",
+        "scene": "同一条内容需要在多个语言和多个平台当天交付时，系统直接出完整发布包。",
+        "first_version": "先做字幕抽取、多语改写、发布包导出，不做复杂剪辑器。",
+        "modules": [
+            {"title": "字幕抽取器", "detail": "上传视频或音频后自动抽出字幕初稿和时间轴。"},
+            {"title": "多语改写器", "detail": "按平台语气生成英文、日文、韩文等版本，不只是字面翻译。"},
+            {"title": "发布包导出", "detail": "一次输出字幕文件、封面文案、标题、标签和配音稿。"},
+            {"title": "交付清单", "detail": "记录每个平台已交付版本与更新时间，方便团队协作。"},
         ],
         "pages": [
-            {"name": "上传页", "purpose": "导入视频并选择语言与目标平台。"},
-            {"name": "翻译工作台", "purpose": "校对字幕、切换语言和调整语气。"},
-            {"name": "导出页", "purpose": "导出字幕、封面文案、配音稿和发布标签。"},
+            {"name": "上传页", "purpose": "导入素材并选择目标语言与平台。"},
+            {"name": "改写工作台", "purpose": "校对字幕、切换语言和调整语气。"},
+            {"name": "发布包页", "purpose": "导出字幕、封面文案、标签和配音稿。"},
+            {"name": "交付页", "purpose": "追踪每个平台的已交付版本。"},
         ],
-        "interactions": [
-            "用户上传视频后先选目标语言和平台。",
-            "系统生成字幕初稿并支持逐句校对。",
-            "确认后自动给出配音稿、封面文案和发布标签。",
-            "用户导出后直接回到剪辑工具或发布后台。",
+        "workflow": [
+            "用户上传素材后选择语言和目标平台。",
+            "系统自动生成字幕、多语文案和平台差异化版本。",
+            "确认后导出完整发布包，而不是单独导出一份字幕。",
+            "后续所有版本统一沉淀到交付清单，减少返工。",
         ],
-        "frontend": "前端重点是上传、字幕对照编辑和导出体验，适合先做 H5 + 小程序轻编辑版本。",
-        "backend": "后端需要音频抽取、ASR、翻译和对象存储，初期可以走异步任务队列。",
-        "audience": "跨境卖家、出海内容团队、短视频代运营。",
-        "promotion": "围绕出海社群、跨境卖家交流群和视频代运营渠道做投放。",
-        "monetization": "按分钟数计费，叠加团队席位和多语包收费。",
+        "frontend": "前端重点是上传、对照编辑和导出体验，先做 H5，再做小程序轻编辑入口。",
+        "backend": "后端负责音频抽取、ASR、翻译、任务队列和对象存储。",
+        "distribution": "围绕跨境卖家群、内容代运营社群、海外营销团队做投放，用“当天直接交付多语发布包”切入。",
+        "monetization": "按分钟数和导出次数计费，团队版按席位收费。",
+        "prompt_goal": "做一个帮团队当天交付多语内容包的产品首版",
     },
     {
-        "id": "agent-workflow-launchpad",
-        "name": "Agent 工作流速搭器",
-        "positioning": "帮团队把热门 Agent 能力快速装配成可复用工作流的轻量工具",
-        "keywords": ("agent", "api", "memory", "deploy", "coding", "workflow", "automation", "open source", "assistant", "工具", "openclaw"),
-        "negative_terms": ("歌手", "足球"),
-        "preferred_groups": ("product", "tech"),
-        "base_scores": {"demand": 49, "launch": 80, "viral": 72, "commercial": 78, "fit": 61},
-        "need": "团队看到很多 Agent 新产品，但从发现能力到真正跑通业务流程，中间仍然缺一个低门槛装配层。",
-        "core_features": [
-            {"title": "模板工作流", "detail": "提供客服、日报、线索清洗、会议摘要等现成模板。"},
-            {"title": "节点装配", "detail": "通过表单方式配置模型、知识库、通知和输出格式。"},
-            {"title": "运行日志", "detail": "查看每次工作流输入、输出和失败节点。"},
-            {"title": "一键复用", "detail": "把工作流分享给团队成员继续二次编辑。"},
-        ],
-        "pages": [
-            {"name": "模板首页", "purpose": "展示热门 Agent 工作流和推荐场景。"},
-            {"name": "编排页", "purpose": "配置输入、节点和输出目标。"},
-            {"name": "运行记录页", "purpose": "查看执行结果和失败日志。"},
-        ],
-        "interactions": [
-            "用户从模板首页选一个最接近业务的工作流。",
-            "在编排页填写模型、知识源和触发方式。",
-            "试运行通过后保存为团队模板。",
-            "后续可直接复制模板做小改后上线。",
-        ],
-        "frontend": "前端重点是可视化步骤卡片与模板市场，适合 H5 首发。",
-        "backend": "后端负责工作流编排、日志存储、外部 API 调用和权限管理。",
-        "audience": "中小团队运营、客服、增长和产品经理。",
-        "promotion": "用模板市场和“5 分钟搭一个 Agent 流程”来获客。",
-        "monetization": "按工作流调用量和团队席位计费。",
-    },
-    {
-        "id": "device-compare-radar",
-        "name": "数码对比雷达",
-        "positioning": "抓新品参数、价格和卖点，帮用户快速做购机购车决策的轻工具",
-        "keywords": ("小米", "比亚迪", "智能手机", "汽车", "参数", "上市", "新款", "宽胎", "马力", "续航", "起售"),
+        "id": "decision-intel-radar",
+        "name_suffix": "决策雷达",
+        "tagline": "抓住新品、价格和对比信号，替用户省掉反复查资料的时间。",
+        "market_shift": "新品密集发布、价格波动更快，用户决策成本正在升高。",
+        "demand_gap": "市场缺的不是更多测评，而是更快完成选择、收藏和提醒的决策工具。",
+        "keywords": (
+            "小米",
+            "手机",
+            "汽车",
+            "参数",
+            "价格",
+            "起售",
+            "上市",
+            "续航",
+            "配置",
+            "对比",
+            "新品",
+        ),
         "negative_terms": ("股市", "债市"),
-        "preferred_groups": ("tech", "social"),
-        "base_scores": {"demand": 44, "launch": 90, "viral": 72, "commercial": 80, "fit": 86},
-        "need": "新品信息分散在媒体和社区里，普通用户很难快速看懂真正有差异的参数和值不值得换新。",
-        "core_features": [
-            {"title": "新品聚合", "detail": "自动聚合新品参数、价格、卖点和媒体摘要。"},
-            {"title": "对比视图", "detail": "按预算、场景、续航、性能等维度横向对比。"},
-            {"title": "购买建议", "detail": "针对不同人群给出推荐理由和避坑提示。"},
-            {"title": "降价提醒", "detail": "收藏后接收降价和版本更新提醒。"},
+        "preferred_groups": ("market", "operator", "demand"),
+        "base_scores": {"demand": 49, "buildability": 88, "boldness": 72, "ai": 78},
+        "target_users": "换新用户、数码消费人群、汽车增购用户、测评账号。",
+        "scene": "新品扎堆发布时，用户想几分钟内做出是否关注、是否等待、是否下单的判断。",
+        "first_version": "先做参数聚合、对比视图、购买建议和价格提醒，不碰交易闭环。",
+        "modules": [
+            {"title": "新品聚合", "detail": "自动抓取新品参数、价格、卖点和媒体摘要。"},
+            {"title": "对比视图", "detail": "按预算、性能、续航、空间等维度直接横向对比。"},
+            {"title": "购买建议", "detail": "针对不同人群给出推荐理由、避坑提示和等待建议。"},
+            {"title": "价格提醒", "detail": "收藏后接收调价、版本更新和替代选择提醒。"},
         ],
         "pages": [
-            {"name": "新品首页", "purpose": "展示最近热议新品和热门对比。"},
-            {"name": "对比页", "purpose": "并排查看参数、价格和适用场景。"},
-            {"name": "收藏页", "purpose": "管理关注产品和价格提醒。"},
+            {"name": "新品页", "purpose": "展示今天真正值得看的新品和热对比。"},
+            {"name": "对比页", "purpose": "并排查看参数、价格和适用人群。"},
+            {"name": "收藏页", "purpose": "管理关注产品和提醒条件。"},
         ],
-        "interactions": [
-            "用户选择预算和品类后进入新品页。",
-            "点击任意两个产品进入对比页。",
-            "系统生成适合人群、优缺点和避坑建议。",
-            "用户收藏后等待后续降价或更新提醒。",
+        "workflow": [
+            "系统聚合新品与价格变化，并按人群和预算打标签。",
+            "用户选中两个或多个产品后进入对比页。",
+            "系统输出适合人群、优缺点和等待建议。",
+            "用户收藏后持续收到调价与替代提醒。",
         ],
-        "frontend": "前端以对比卡片和参数表为核心，适合小程序直接切入。",
+        "frontend": "前端核心是参数对比卡片、预算筛选和收藏提醒，天然适合小程序首发。",
         "backend": "后端主要做内容聚合、价格同步和规则化推荐，工程复杂度较低。",
-        "audience": "数码消费人群、汽车增购用户、内容测评账号。",
-        "promotion": "可从评测号合作、购车群和数码社区切入。",
-        "monetization": "导购分成、品牌广告位和高级提醒服务。",
+        "distribution": "从数码社群、购车群、测评合作账号切入，以“几分钟完成选择”做传播。",
+        "monetization": "导购分成、品牌赞助位和高级提醒服务。",
+        "prompt_goal": "做一个帮助用户快速完成换新决策的工具首版",
     },
     {
-        "id": "job-interview-lab",
-        "name": "面试练习舱",
-        "positioning": "把岗位需求、简历问题和模拟提问串起来的求职训练小程序",
-        "keywords": ("就业", "面试", "简历", "offer", "实习", "求职", "岗位", "招聘", "职场"),
-        "negative_terms": ("股市", "黄金", "冲突"),
-        "preferred_groups": ("social", "tech"),
-        "base_scores": {"demand": 47, "launch": 86, "viral": 70, "commercial": 81, "fit": 91},
-        "need": "求职用户能拿到很多岗位信息，却缺一个把简历改写、模拟追问和复盘串起来的轻量训练工具。",
-        "core_features": [
-            {"title": "岗位解析", "detail": "导入 JD 后自动拆出核心能力、关键词和风险点。"},
-            {"title": "简历快改", "detail": "根据岗位要求改写项目表述和成就句式。"},
-            {"title": "模拟追问", "detail": "生成多轮面试问题并给出答题建议。"},
-            {"title": "复盘清单", "detail": "记录每次面试表现和待补能力。"},
+        "id": "career-acceleration-lab",
+        "name_suffix": "上岸训练舱",
+        "tagline": "把岗位变化、简历改写和模拟提问串成闭环，不再只看招聘信息。",
+        "market_shift": "求职竞争仍强，用户要的是准备效率和反馈闭环，而不是更多岗位资讯。",
+        "demand_gap": "市场需要一个能把 JD、简历、追问和复盘串起来的训练工具。",
+        "keywords": (
+            "就业",
+            "面试",
+            "简历",
+            "offer",
+            "实习",
+            "求职",
+            "岗位",
+            "招聘",
+            "职场",
+            "简历",
+        ),
+        "negative_terms": ("股市", "冲突"),
+        "preferred_groups": ("demand", "operator"),
+        "base_scores": {"demand": 51, "buildability": 87, "boldness": 76, "ai": 86},
+        "target_users": "应届生、转岗用户、职业教育社群、求职训练营。",
+        "scene": "看到岗位变化后，立刻把简历、模拟问答和复盘都跑一遍。",
+        "first_version": "先做岗位解析、简历快改、模拟追问和复盘清单，不做招聘平台。",
+        "modules": [
+            {"title": "岗位译码器", "detail": "导入 JD 后自动拆出关键能力、关键词和风险项。"},
+            {"title": "简历快改", "detail": "根据目标岗位改写项目表述和成果句式。"},
+            {"title": "模拟追问", "detail": "生成多轮面试问题、追问和答题建议。"},
+            {"title": "复盘清单", "detail": "沉淀每次表现、待补能力和下一次冲刺任务。"},
         ],
         "pages": [
             {"name": "岗位导入页", "purpose": "输入岗位链接或 JD 文本。"},
@@ -320,17 +497,17 @@ BLUEPRINTS: list[dict[str, Any]] = [
             {"name": "模拟面试页", "purpose": "进行多轮问答和评分。"},
             {"name": "复盘页", "purpose": "沉淀错题和后续准备清单。"},
         ],
-        "interactions": [
-            "用户先输入岗位描述并上传简历。",
-            "系统标记关键能力缺口并给出改写建议。",
-            "随后进入模拟问答，生成追问和答题提示。",
+        "workflow": [
+            "用户先导入岗位描述并上传简历。",
+            "系统标记能力缺口并给出简历快改建议。",
+            "随后进入模拟追问，生成更接近真实面试的问答链。",
             "结束后输出复盘清单和下一步补强建议。",
         ],
         "frontend": "前端核心是表单导入、双栏对照和问答聊天流，适合小程序轻交互。",
         "backend": "后端负责岗位解析、简历版本存储和模拟问答生成。",
-        "audience": "应届生、转岗用户、职业教育社群。",
-        "promotion": "从求职群、训练营和高校就业社群切入。",
-        "monetization": "按周会员、岗位包和一对一精修附加服务收费。",
+        "distribution": "从求职群、训练营、高校就业社群切入，用“当天就能开始练”的定位传播。",
+        "monetization": "按周会员、岗位专题包和高阶训练营联名收费。",
+        "prompt_goal": "做一个帮用户当天完成求职准备闭环的产品首版",
     },
 ]
 
@@ -341,58 +518,62 @@ def build_miniapp_factory(
     history_dir: Path | None = None,
 ) -> dict[str, Any]:
     pool = collect_signal_items(raw_by_source, now)
-    recent_blueprints = load_recent_blueprints(history_dir)
+    recent_ids = load_recent_creation_ids(history_dir)
 
-    candidates = [score_blueprint(blueprint, pool, now, recent_blueprints) for blueprint in BLUEPRINTS]
+    candidates = [score_theme(theme, pool, recent_ids) for theme in THEMES]
     candidates.sort(key=lambda item: item["score"], reverse=True)
+    selected = select_candidates(candidates)
+    if not selected:
+        selected = [fallback_candidate(now)]
 
-    selected = candidates[0] if candidates else fallback_candidate(now)
-    if candidates:
-        score_floor = selected["score"] - 3.5
-        for candidate in candidates:
-            if candidate["scores"]["fit"] >= 75 and candidate["score"] >= score_floor:
-                selected = candidate
-                break
-    plan = build_heuristic_plan(selected, now)
-    mode = "template"
+    creations = [build_creation(candidate, now) for candidate in selected]
+    top_evidence = build_top_evidence(selected)
+    daily_brief = build_daily_brief(selected, now)
+    scorecard = build_scorecard(selected, top_evidence)
+
+    factory = {
+        "title": "AI 自动造物系统",
+        "subtitle": "每天 07:00 根据真实变化生成多个今天值得造的新产品 / 新工具。",
+        "generatedAt": clock(now),
+        "scheduledAt": "07:00 Asia/Shanghai",
+        "windowLabel": build_window_label(now),
+        "mode": "heuristic",
+        "summary": daily_brief["headline"],
+        "scorecard": scorecard,
+        "dailyBrief": daily_brief,
+        "primaryCreationId": creations[0]["creationId"],
+        "todayCreations": creations,
+        "evidenceSignals": top_evidence,
+        "engine": build_engine_meta(pool, recent_ids, config),
+    }
 
     client = create_openai_client()
-    if client is not None and selected["evidence"]:
+    if client is not None and top_evidence:
         try:
-            plan = build_ai_plan(client, selected, candidates[:3], now)
-            mode = "ai"
+            enrich_factory_with_ai(client, factory, selected, now)
+            factory["mode"] = "ai"
         except Exception as exc:  # noqa: BLE001
             print(f"[miniapp-factory][ai] failed -> {exc}")
 
-    return {
-        "title": "AI 自动造小程序系统",
-        "subtitle": "每天从真实热点、产品趋势和用户讨论里，筛出一个最值得做的小程序方案。",
-        "generatedAt": clock(now),
-        "windowLabel": build_window_label(now),
-        "mode": mode,
-        "summary": build_factory_summary(selected),
-        "scores": selected["scores"],
-        "todayPlan": plan,
-        "evidenceSignals": selected["evidence"],
-        "candidateBoard": [build_candidate_card(item, selected["blueprint"]["id"]) for item in candidates[:3]],
-        "engine": build_engine_meta(pool, recent_blueprints, config),
-    }
+    return factory
 
 
 def collect_signal_items(raw_by_source: dict[str, list[dict[str, Any]]], now: datetime) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     seen_titles: set[str] = set()
-    window_start = (now - timedelta(hours=48)).replace(tzinfo=None)
+    window_start = (now - timedelta(hours=36)).replace(tzinfo=None)
 
     for group, source_ids in FACTORY_SOURCE_GROUPS.items():
         for source_id in source_ids:
-            for rank, item in enumerate(raw_by_source.get(source_id, [])[:20], start=1):
+            for rank, item in enumerate(raw_by_source.get(source_id, [])[:24], start=1):
                 title = clean_text(item.get("title"))
                 if not title or is_noise_title(title):
                     continue
 
                 normalized = normalize_text(title)
                 if normalized in seen_titles:
+                    continue
+                if not looks_relevant(normalized, group):
                     continue
 
                 published_at = clean_text(item.get("publishedAt")) or None
@@ -405,7 +586,7 @@ def collect_signal_items(raw_by_source: dict[str, list[dict[str, Any]]], now: da
                     {
                         "title": title,
                         "normalized": normalized,
-                        "url": item.get("url") or "#",
+                        "url": clean_text(item.get("url")) or "#",
                         "source": clean_text(item.get("sourceLabel")) or source_id,
                         "sourceId": source_id,
                         "group": group,
@@ -418,51 +599,56 @@ def collect_signal_items(raw_by_source: dict[str, list[dict[str, Any]]], now: da
     return items
 
 
-def score_blueprint(
-    blueprint: dict[str, Any],
-    pool: list[dict[str, Any]],
-    now: datetime,
-    recent_blueprints: list[str],
-) -> dict[str, Any]:
+def looks_relevant(normalized: str, group: str) -> bool:
+    if group in {"product", "operator"}:
+        return True
+    keywords = INTENT_TERMS + PAIN_TERMS + COMMERCIAL_TERMS + CHANGE_TERMS + ACTION_TERMS
+    return has_any(normalized, keywords)
+
+
+def score_theme(theme: dict[str, Any], pool: list[dict[str, Any]], recent_ids: list[str]) -> dict[str, Any]:
     evidence: list[dict[str, Any]] = []
     matched_groups: set[str] = set()
     matched_sources: set[str] = set()
-    matched_terms: set[str] = set()
+    matched_terms: list[str] = []
+    pain_hits = 0
     commercial_hits = 0
-    hot_hits = 0
     action_hits = 0
+    change_hits = 0
 
     for item in pool:
-        matches = keyword_hits(item["normalized"], blueprint["keywords"])
+        matches = keyword_hits(item["normalized"], theme["keywords"])
         if not matches:
             continue
 
-        negative_hits = keyword_hits(item["normalized"], blueprint.get("negative_terms", ()))
-        evidence_score = 12 + len(matches) * 8
-        evidence_score += max(0, int(item["sourceWeight"] * 6))
-        evidence_score += max(0, 8 - item["rank"])
+        negative_hits = keyword_hits(item["normalized"], theme.get("negative_terms", ()))
+        evidence_score = 14 + len(matches) * 8
+        evidence_score += max(0, int(item["sourceWeight"] * 7))
+        evidence_score += max(0, 9 - item["rank"])
 
-        if item["group"] in blueprint.get("preferred_groups", ()):
-            evidence_score += 5
-
+        if item["group"] in theme.get("preferred_groups", ()):
+            evidence_score += 6
+        if has_any(item["normalized"], PAIN_TERMS):
+            pain_hits += 1
+            evidence_score += 6
         if has_any(item["normalized"], COMMERCIAL_TERMS):
             commercial_hits += 1
             evidence_score += 5
         if has_any(item["normalized"], ACTION_TERMS):
             action_hits += 1
             evidence_score += 4
-        if has_any(item["normalized"], HOT_TERMS):
-            hot_hits += 1
-            evidence_score += 3
+        if has_any(item["normalized"], CHANGE_TERMS):
+            change_hits += 1
+            evidence_score += 5
         if negative_hits:
-            evidence_score -= len(negative_hits) * 5
+            evidence_score -= len(negative_hits) * 6
 
-        if evidence_score < 16:
+        if evidence_score < 18:
             continue
 
         matched_groups.add(item["group"])
         matched_sources.add(item["sourceId"])
-        matched_terms.update(matches)
+        matched_terms.extend(matches)
 
         evidence.append(
             {
@@ -475,331 +661,427 @@ def score_blueprint(
                 "publishedAt": item["publishedAt"],
                 "score": evidence_score,
                 "matchTerms": matches[:3],
-                "reason": build_signal_reason(item["title"], matches),
+                "reason": build_signal_reason(item["title"], matches, theme),
             }
         )
 
     evidence.sort(key=lambda item: (item["score"], item.get("publishedAt") or ""), reverse=True)
     evidence = diversify_evidence(evidence, 6)
+    unique_terms = unique_preserving_order(matched_terms)
 
-    demand = blueprint["base_scores"]["demand"]
-    demand += min(20, len(matched_terms) * 2)
-    demand += min(18, len(matched_groups) * 8)
-    demand += min(16, len(evidence) * 3)
-    demand += min(10, commercial_hits * 2)
-    demand += min(8, action_hits * 2)
+    demand = theme["base_scores"]["demand"]
+    demand += min(18, len(unique_terms) * 2)
+    demand += min(16, len(matched_groups) * 7)
+    demand += min(12, len(evidence) * 2)
+    demand += min(10, pain_hits * 2)
+    demand += min(8, commercial_hits * 2)
     if len(matched_groups) < 2:
         demand -= 10
     if not evidence:
-        demand = max(18, demand - 28)
+        demand = max(20, demand - 26)
 
-    launch = blueprint["base_scores"]["launch"]
-    viral = min(100, blueprint["base_scores"]["viral"] + min(8, hot_hits * 2))
-    commercial = min(100, blueprint["base_scores"]["commercial"] + min(8, commercial_hits * 2))
-    fit = blueprint["base_scores"]["fit"]
+    buildability = theme["base_scores"]["buildability"]
+    buildability += min(8, action_hits * 2)
+    buildability += min(6, change_hits)
+    if len(matched_sources) >= 3:
+        buildability += 3
+
+    boldness = theme["base_scores"]["boldness"]
+    boldness += min(8, max(0, len(matched_groups) - 1) * 3)
+    boldness += 4 if change_hits >= 2 else 0
+
+    ai_leverage = theme["base_scores"]["ai"]
+    ai_leverage += min(6, action_hits)
+    ai_leverage += 4 if has_any(" ".join(unique_terms), ("agent", "translate", "生成", "自动")) else 0
 
     repeat_penalty = 0
-    if blueprint["id"] in recent_blueprints[:3]:
-        repeat_penalty = 20
-    elif blueprint["id"] in recent_blueprints[:7]:
-        repeat_penalty = 12
-    elif blueprint["id"] in recent_blueprints:
-        repeat_penalty = 6
+    if theme["id"] in recent_ids[:4]:
+        repeat_penalty = 18
+    elif theme["id"] in recent_ids[:10]:
+        repeat_penalty = 10
+    elif theme["id"] in recent_ids:
+        repeat_penalty = 4
 
-    total = demand * 0.38 + launch * 0.18 + viral * 0.18 + commercial * 0.18 + fit * 0.08
+    total = demand * 0.34 + buildability * 0.24 + boldness * 0.2 + ai_leverage * 0.22
     total -= repeat_penalty
 
     return {
-        "blueprint": blueprint,
+        "theme": theme,
         "score": round(total, 1),
         "scores": {
             "demand": clamp_score(demand),
-            "launch": clamp_score(launch),
-            "viral": clamp_score(viral),
-            "commercial": clamp_score(commercial),
-            "fit": clamp_score(fit),
+            "buildability": clamp_score(buildability),
+            "boldness": clamp_score(boldness),
+            "aiLeverage": clamp_score(ai_leverage),
         },
         "evidence": evidence,
         "matchedGroups": sorted(matched_groups),
         "matchedSources": sorted(matched_sources),
-        "matchedTerms": sorted(matched_terms),
+        "matchedTerms": unique_terms,
         "repeatPenalty": repeat_penalty,
-        "windowLabel": build_window_label(now),
     }
 
 
-def build_heuristic_plan(candidate: dict[str, Any], now: datetime) -> dict[str, Any]:
-    blueprint = candidate["blueprint"]
-    evidence = candidate["evidence"][:4]
-    evidence_titles = "；".join(f"{item['source']}：{shorten(item['title'], 28)}" for item in evidence)
+def select_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    if not candidates:
+        return []
 
-    why_today = (
-        f"今天适合做，是因为最近 48 小时的高信号源同时在放大“{blueprint['positioning']}”这条需求。"
-        f"当前命中的关键线索包括：{evidence_titles or '产品榜单、科技媒体和中文讨论都在抬升相关需求'}。"
-        f"{WHY_TODAY_CLOSERS.get(blueprint['id'], '这说明用户不是单纯在看热闹，而是在找更快把信号转成结果的工具。')}"
+    selected: list[dict[str, Any]] = []
+    score_floor = candidates[0]["score"] - 16
+    for candidate in candidates:
+        if candidate["score"] < score_floor and len(selected) >= 3:
+            continue
+        if candidate["scores"]["demand"] < 48:
+            continue
+        selected.append(candidate)
+        if len(selected) >= 4:
+            break
+
+    if not selected:
+        return candidates[:3]
+    if len(selected) < 3:
+        for candidate in candidates:
+            if candidate in selected:
+                continue
+            selected.append(candidate)
+            if len(selected) >= 3:
+                break
+    return selected
+
+
+def build_creation(candidate: dict[str, Any], now: datetime) -> dict[str, Any]:
+    theme = candidate["theme"]
+    name = build_creation_name(theme, candidate)
+    sources = candidate["evidence"][:3]
+    source_lines = "、".join(shorten(item["title"], 16) for item in sources[:2]) or "高信号市场变化"
+    groups = "、".join(SOURCE_GROUP_LABELS[group] for group in candidate["matchedGroups"])
+    groups = groups or "多个高信号来源"
+
+    because = f"因为 {groups} 里反复出现“{source_lines}”这类信号，说明 {theme['market_shift']}"
+    first_version = theme["first_version"].rstrip("。")
+    if first_version.startswith("先做"):
+        first_version = first_version[2:].strip("， ")
+    create_what = f"所以今天适合造「{name}」：{theme['tagline']} 首版范围是 {first_version}。"
+    why_now = (
+        f"过去 36 小时里，这条需求不是单点热度，而是被 {max(1, len(candidate['matchedSources']))} 个来源反复放大。"
+        f" {theme['demand_gap']}"
     )
 
-    return {
-        "blueprintId": blueprint["id"],
-        "name": blueprint["name"],
-        "positioning": blueprint["positioning"],
-        "coreNeed": blueprint["need"],
-        "whyToday": why_today,
-        "marketBasis": build_market_basis(candidate),
-        "coreFeatures": blueprint["core_features"],
-        "pageStructure": blueprint["pages"],
-        "interactionLogic": blueprint["interactions"],
-        "implementation": {
-            "frontend": blueprint["frontend"],
-            "backend": blueprint["backend"],
-            "platforms": ["微信小程序", "抖音小程序", "H5", "App 基础壳"],
+    creation = {
+        "creationId": theme["id"],
+        "name": name,
+        "tagline": theme["tagline"],
+        "because": because,
+        "createWhat": create_what,
+        "whyNow": why_now,
+        "targetUsers": theme["target_users"],
+        "scene": theme["scene"],
+        "aiBuildability": build_ai_buildability(candidate["scores"]),
+        "firstVersion": first_version,
+        "scores": candidate["scores"],
+        "coreModules": theme["modules"],
+        "pageStructure": theme["pages"],
+        "workflow": theme["workflow"],
+        "delivery": {
+            "frontend": theme["frontend"],
+            "backend": theme["backend"],
+            "platforms": build_platforms(candidate["scores"]),
         },
-        "audience": blueprint["audience"],
-        "promotion": blueprint["promotion"],
-        "monetization": blueprint["monetization"],
-        "generatedAt": clock(now),
+        "launchPlan": theme["distribution"],
+        "monetization": theme["monetization"],
+        "sources": sources,
+    }
+    creation["aiBuildPrompt"] = build_ai_build_prompt(creation, theme)
+    return creation
+
+
+def build_creation_name(theme: dict[str, Any], candidate: dict[str, Any]) -> str:
+    lead = candidate["matchedTerms"][0] if candidate["matchedTerms"] else theme["id"].split("-")[0]
+    prefix = DISPLAY_TERMS.get(lead.lower(), DISPLAY_TERMS.get(lead, DEFAULT_PREFIXES.get(theme["id"], "今日")))
+    if theme["name_suffix"].startswith(prefix):
+        return theme["name_suffix"]
+    return f"{prefix}{theme['name_suffix']}"
+
+
+def build_ai_buildability(scores: dict[str, int]) -> str:
+    if scores["buildability"] >= 84 and scores["aiLeverage"] >= 88:
+        return "可直接让 AI 生成首版"
+    if scores["buildability"] >= 72:
+        return "AI 先出 70%，你补数据和接口"
+    return "AI 先出骨架，人工补重交付部分"
+
+
+def build_platforms(scores: dict[str, int]) -> list[str]:
+    if scores["buildability"] >= 82:
+        return ["H5", "微信小程序", "抖音小程序"]
+    return ["H5", "微信小程序"]
+
+def build_ai_build_prompt(creation: dict[str, Any], theme: dict[str, Any]) -> str:
+    modules = "\n".join(f"- {item['title']}：{item['detail']}" for item in creation["coreModules"])
+    pages = "\n".join(f"- {item['name']}：{item['purpose']}" for item in creation["pageStructure"])
+    flow = "\n".join(f"- {item}" for item in creation["workflow"])
+    platforms = " / ".join(creation["delivery"]["platforms"])
+    return f"""
+你现在是 AI 产品架构师 + 全栈开发者，请直接为我生成这个产品的首版。
+
+产品名称：{creation['name']}
+产品一句话：{creation['tagline']}
+为什么今天做：{creation['because']}
+要创造什么：{creation['createWhat']}
+目标用户：{creation['targetUsers']}
+使用场景：{creation['scene']}
+AI 参与方式：{creation['aiBuildability']}
+首发平台：{platforms}
+首版边界：{creation['firstVersion']}
+产品目标：{theme['prompt_goal']}
+
+核心模块：
+{modules}
+
+页面结构：
+{pages}
+
+关键流程：
+{flow}
+
+实现要求：
+1. 先输出产品定位、用户故事、信息架构、页面清单。
+2. 再输出前端方案、后端方案、数据结构、接口设计。
+3. 默认首发做 H5 + 微信小程序，技术上尽量轻量、可快速上线。
+4. 输出一个能继续直接开发的 MVP，不要写空泛建议。
+5. 如果有适合 AI 自动生成的部分，直接给出提示词、页面文案和结构化数据示例。
+""".strip()
+
+
+def build_daily_brief(candidates: list[dict[str, Any]], now: datetime) -> dict[str, Any]:
+    market_shifts = []
+    for candidate in candidates[:3]:
+        theme = candidate["theme"]
+        evidence = candidate["evidence"][:2]
+        signal_text = "、".join(shorten(item["title"], 14) for item in evidence) or theme["tagline"]
+        market_shifts.append(f"{signal_text} 这类信号在今天重复出现，说明 {theme['market_shift']}")
+
+    headline = "今天不该再做资讯站，而该做能把变化直接翻成动作、交付或决策结果的产品。"
+    build_policy = "优先做 AI 能快速出首版的执行型工具：先用 H5 / 微信小程序跑通，再决定是否补 App、自动化和团队协作。"
+    return {
+        "headline": headline,
+        "marketShifts": market_shifts[:3],
+        "buildPolicy": build_policy,
+        "schedule": f"下一次自动生成时间：{next_run_label(now)}",
     }
 
 
-def build_ai_plan(
-    client: Any,
-    candidate: dict[str, Any],
-    top_candidates: list[dict[str, Any]],
-    now: datetime,
-) -> dict[str, Any]:
+def build_scorecard(candidates: list[dict[str, Any]], evidence: list[dict[str, Any]]) -> dict[str, int]:
+    if not candidates:
+        return {"change": 40, "demand": 40, "build": 40, "bold": 40, "ai": 40}
+
+    avg_demand = sum(item["scores"]["demand"] for item in candidates) / len(candidates)
+    avg_build = sum(item["scores"]["buildability"] for item in candidates) / len(candidates)
+    avg_bold = sum(item["scores"]["boldness"] for item in candidates) / len(candidates)
+    avg_ai = sum(item["scores"]["aiLeverage"] for item in candidates) / len(candidates)
+    groups = {item["group"] for item in evidence}
+    change = clamp_score(len(evidence) * 10 + len(groups) * 9 + 18)
+
+    return {
+        "change": change,
+        "demand": clamp_score(avg_demand),
+        "build": clamp_score(avg_build),
+        "bold": clamp_score(avg_bold),
+        "ai": clamp_score(avg_ai),
+    }
+
+
+def build_top_evidence(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    merged: list[dict[str, Any]] = []
+    seen_titles: set[str] = set()
+    for candidate in candidates:
+        for item in candidate["evidence"]:
+            key = normalize_text(item["title"])
+            if key in seen_titles:
+                continue
+            seen_titles.add(key)
+            merged.append(item)
+    merged.sort(key=lambda item: (item["score"], item.get("publishedAt") or ""), reverse=True)
+    return merged[:8]
+
+
+def build_engine_meta(pool: list[dict[str, Any]], recent_ids: list[str], config: dict[str, Any]) -> dict[str, Any]:
+    sources = []
+    for group, source_ids in FACTORY_SOURCE_GROUPS.items():
+        count = sum(1 for item in pool if item["group"] == group)
+        sources.append(
+            {
+                "name": SOURCE_GROUP_LABELS[group],
+                "count": count,
+                "sources": [
+                    config["sources"][source_id]["label"]
+                    for source_id in source_ids
+                    if source_id in config.get("sources", {})
+                ],
+            }
+        )
+
+    return {
+        "sources": sources,
+        "collectionRules": [
+            "不再铺大众新闻，优先抓产品发布、行业变化、商家动作、用户需求这几类高价值信号。",
+            "过去 36 小时优先，旧线索自动降权，避免页面越来越像历史新闻墙。",
+            "标题先去重，再按动作性、商业价值、跨源重复度加权。",
+        ],
+        "qualityRules": [
+            "至少要求 2 个来源组都能解释这个机会，避免被单一热搜误导。",
+            "自动过滤体育、明星、纯娱乐和低商业价值话题。",
+            f"最近历史里已经记录了 {len(recent_ids)} 个方向，会参与去重和降权。",
+        ],
+        "buildRules": [
+            "默认每天 07:00 自动生成，优先给出多个今天值得造的方向，而不是只挑 1 个。",
+            "每个方向都必须写清楚：为什么现在、造什么、谁会用、如何让 AI 继续接力。",
+            "优先执行型、决策型、交付型工具，少做纯信息聚合页。",
+        ],
+    }
+
+
+def enrich_factory_with_ai(client: Any, factory: dict[str, Any], candidates: list[dict[str, Any]], now: datetime) -> None:
     schema = {
         "type": "object",
         "properties": {
-            "positioning": {"type": "string"},
-            "coreNeed": {"type": "string"},
-            "whyToday": {"type": "string"},
-            "marketBasis": {
+            "headline": {"type": "string"},
+            "marketShifts": {
                 "type": "array",
                 "minItems": 3,
-                "maxItems": 4,
+                "maxItems": 3,
                 "items": {"type": "string"},
             },
-            "coreFeatures": {
+            "buildPolicy": {"type": "string"},
+            "creations": {
                 "type": "array",
-                "minItems": 3,
-                "maxItems": 5,
+                "minItems": len(factory["todayCreations"]),
+                "maxItems": len(factory["todayCreations"]),
                 "items": {
                     "type": "object",
                     "properties": {
-                        "title": {"type": "string"},
-                        "detail": {"type": "string"},
-                    },
-                    "required": ["title", "detail"],
-                    "additionalProperties": False,
-                },
-            },
-            "pageStructure": {
-                "type": "array",
-                "minItems": 3,
-                "maxItems": 5,
-                "items": {
-                    "type": "object",
-                    "properties": {
+                        "creationId": {"type": "string"},
                         "name": {"type": "string"},
-                        "purpose": {"type": "string"},
+                        "tagline": {"type": "string"},
+                        "because": {"type": "string"},
+                        "createWhat": {"type": "string"},
+                        "whyNow": {"type": "string"},
+                        "targetUsers": {"type": "string"},
+                        "scene": {"type": "string"},
+                        "firstVersion": {"type": "string"},
+                        "launchPlan": {"type": "string"},
+                        "monetization": {"type": "string"},
                     },
-                    "required": ["name", "purpose"],
+                    "required": [
+                        "creationId",
+                        "name",
+                        "tagline",
+                        "because",
+                        "createWhat",
+                        "whyNow",
+                        "targetUsers",
+                        "scene",
+                        "firstVersion",
+                        "launchPlan",
+                        "monetization",
+                    ],
                     "additionalProperties": False,
                 },
             },
-            "interactionLogic": {
-                "type": "array",
-                "minItems": 4,
-                "maxItems": 6,
-                "items": {"type": "string"},
-            },
-            "implementation": {
-                "type": "object",
-                "properties": {
-                    "frontend": {"type": "string"},
-                    "backend": {"type": "string"},
-                },
-                "required": ["frontend", "backend"],
-                "additionalProperties": False,
-            },
-            "audience": {"type": "string"},
-            "promotion": {"type": "string"},
-            "monetization": {"type": "string"},
         },
-        "required": [
-            "positioning",
-            "coreNeed",
-            "whyToday",
-            "marketBasis",
-            "coreFeatures",
-            "pageStructure",
-            "interactionLogic",
-            "implementation",
-            "audience",
-            "promotion",
-            "monetization",
-        ],
+        "required": ["headline", "marketShifts", "buildPolicy", "creations"],
         "additionalProperties": False,
     }
 
     response = client.responses.create(
         model=os.environ.get("OPENAI_MODEL", "gpt-5-mini"),
-        input=build_ai_prompt(candidate, top_candidates, now),
+        input=build_ai_prompt(factory, candidates, now),
         text={
             "format": {
                 "type": "json_schema",
-                "name": "daily_miniapp_factory_plan",
+                "name": "daily_creation_board",
                 "strict": True,
                 "schema": schema,
             }
         },
     )
     payload = json.loads(response.output_text)
-    return {
-        "blueprintId": candidate["blueprint"]["id"],
-        "name": candidate["blueprint"]["name"],
-        "positioning": clean_text(payload["positioning"]),
-        "coreNeed": clean_text(payload["coreNeed"]),
-        "whyToday": clean_text(payload["whyToday"]),
-        "marketBasis": [clean_text(item) for item in payload["marketBasis"]],
-        "coreFeatures": [
-            {"title": clean_text(item["title"]), "detail": clean_text(item["detail"])}
-            for item in payload["coreFeatures"]
-        ],
-        "pageStructure": [
-            {"name": clean_text(item["name"]), "purpose": clean_text(item["purpose"])}
-            for item in payload["pageStructure"]
-        ],
-        "interactionLogic": [clean_text(item) for item in payload["interactionLogic"]],
-        "implementation": {
-            "frontend": clean_text(payload["implementation"]["frontend"]),
-            "backend": clean_text(payload["implementation"]["backend"]),
-            "platforms": ["微信小程序", "抖音小程序", "H5", "App 基础壳"],
-        },
-        "audience": clean_text(payload["audience"]),
-        "promotion": clean_text(payload["promotion"]),
-        "monetization": clean_text(payload["monetization"]),
-        "generatedAt": clock(now),
-    }
+    factory["summary"] = clean_text(payload["headline"])
+    factory["dailyBrief"]["headline"] = clean_text(payload["headline"])
+    factory["dailyBrief"]["marketShifts"] = [clean_text(item) for item in payload["marketShifts"]]
+    factory["dailyBrief"]["buildPolicy"] = clean_text(payload["buildPolicy"])
 
-def build_ai_prompt(candidate: dict[str, Any], top_candidates: list[dict[str, Any]], now: datetime) -> str:
-    blueprint = candidate["blueprint"]
-    evidence_lines = "\n".join(
-        f"- [{item['source']}] {item['title']}（来源组：{item['groupLabel']}，命中词：{', '.join(item['matchTerms']) or '信号'}）"
-        for item in candidate["evidence"][:6]
-    )
-    alternatives = "\n".join(
-        f"- {item['blueprint']['name']}：总分 {item['score']}，需求 {item['scores']['demand']}，上线速度 {item['scores']['launch']}"
-        for item in top_candidates
-    )
+    candidate_map = {item["theme"]["id"]: item for item in candidates}
+    creation_map = {item["creationId"]: item for item in factory["todayCreations"]}
+    for item in payload["creations"]:
+        creation_id = clean_text(item["creationId"])
+        creation = creation_map.get(creation_id)
+        candidate = candidate_map.get(creation_id)
+        if not creation or not candidate:
+            continue
+        creation["name"] = clean_text(item["name"])
+        creation["tagline"] = clean_text(item["tagline"])
+        creation["because"] = clean_text(item["because"])
+        creation["createWhat"] = clean_text(item["createWhat"])
+        creation["whyNow"] = clean_text(item["whyNow"])
+        creation["targetUsers"] = clean_text(item["targetUsers"])
+        creation["scene"] = clean_text(item["scene"])
+        creation["firstVersion"] = clean_text(item["firstVersion"])
+        creation["launchPlan"] = clean_text(item["launchPlan"])
+        creation["monetization"] = clean_text(item["monetization"])
+        creation["aiBuildPrompt"] = build_ai_build_prompt(creation, candidate["theme"])
+
+
+def build_ai_prompt(factory: dict[str, Any], candidates: list[dict[str, Any]], now: datetime) -> str:
+    signal_lines = []
+    for candidate in candidates[:4]:
+        theme = candidate["theme"]
+        for item in candidate["evidence"][:2]:
+            signal_lines.append(f"- [{theme['id']}] [{item['source']}] {item['title']}（来源组：{item['groupLabel']}）")
+
+    creation_lines = []
+    for item in factory["todayCreations"]:
+        creation_lines.append(
+            "\n".join(
+                [
+                    f"creationId: {item['creationId']}",
+                    f"name: {item['name']}",
+                    f"tagline: {item['tagline']}",
+                    f"because: {item['because']}",
+                    f"createWhat: {item['createWhat']}",
+                    f"whyNow: {item['whyNow']}",
+                    f"targetUsers: {item['targetUsers']}",
+                    f"scene: {item['scene']}",
+                    f"firstVersion: {item['firstVersion']}",
+                    f"launchPlan: {item['launchPlan']}",
+                    f"monetization: {item['monetization']}",
+                ]
+            )
+        )
+
     return f"""
-你是中文 AI 产品架构师兼增长负责人。你要基于“真实市场信号”输出一份今天最适合做的小程序方案。
+你是一个大胆但务实的中文 AI 产品架构师。
+你不是在写新闻摘要，而是在根据真实变化生成“今天最值得造的东西”。
 
-现在时间：{clock(now)}
-最终入选方案：{blueprint['name']}
-预设定位：{blueprint['positioning']}
-预设核心需求：{blueprint['need']}
+当前时间：{clock(now)}
 
-今天命中的真实信号：
-{evidence_lines}
+真实信号：
+{chr(10).join(signal_lines)}
 
-候选池对比：
-{alternatives}
+当前启发式结果：
+{chr(10).join(creation_lines)}
 
 输出要求：
-1. 只基于这些线索做判断，不要虚构数据、榜单名次或用户数量。
-2. 语气直接、可开发、可落地，不要写空话。
-3. 小程序要偏轻量、成本可控、能先做微信小程序与 H5，再扩到抖音和 App。
-4. whyToday 必须说明“为什么今天适合做”，带出真实市场依据。
-5. implementation 中前端和后端各写一段，强调首发技术路线。
-6. 全部用简体中文。
+1. headline 要明确表达“今天不该继续做资讯站，而该做什么类型的产品”。
+2. marketShifts 必须写成 3 条“变化判断”，不是复述新闻标题。
+3. 每个 creation 都要写得更像创始人会直接拿去开干的方向。
+4. because 和 createWhat 必须形成“因为...所以造...”的关系。
+5. 可以大胆，但不要虚构市场数据、榜单名次或用户量。
+6. 语气直接、中文、可执行。
 """.strip()
 
 
-def build_market_basis(candidate: dict[str, Any]) -> list[str]:
-    evidence = candidate["evidence"][:4]
-    basis = []
-    for item in evidence:
-        basis.append(
-            f"{item['source']} 当前出现“{shorten(item['title'], 42)}”这类信号，说明相关需求正在被放大。"
-        )
-    if len(candidate["matchedGroups"]) >= 2:
-        groups = "、".join(SOURCE_GROUP_LABELS[group] for group in candidate["matchedGroups"])
-        basis.append(f"信号同时来自 {groups}，不是单一来源的偶发热度。")
-    basis.append(
-        f"这条方案的上线速度分为 {candidate['scores']['launch']}，更适合用轻交互页面和模板化生成先跑通。"
-    )
-    return basis[:4]
-
-
-def build_factory_summary(candidate: dict[str, Any]) -> str:
-    blueprint = candidate["blueprint"]
-    evidence = candidate["evidence"][:2]
-    if not evidence:
-        return f"今天先落在「{blueprint['name']}」，因为它仍然是当前最适合小程序首发、成本最低的一类方案。"
-    signal_text = "、".join(shorten(item["title"], 24) for item in evidence)
-    return (
-        f"今天最值得做的是「{blueprint['name']}」。当前高信号源正在同时放大 {blueprint['positioning']} 这类需求，"
-        f"核心触发点来自：{signal_text}。"
-    )
-
-
-def build_candidate_card(candidate: dict[str, Any], selected_blueprint_id: str) -> dict[str, Any]:
-    blueprint = candidate["blueprint"]
-    note = "今天的头号方案。"
-    if blueprint["id"] != selected_blueprint_id:
-        if candidate["scores"]["fit"] < 75:
-            note = "信号不弱，但更像工具站或 Web 产品，不如头号方案适合小程序先发。"
-        elif candidate["scores"]["launch"] < 75:
-            note = "需求存在，但首发工程量更重，适合排进下一轮候选池。"
-        else:
-            note = "方向成立，不过今天的跨源验证和传播性略弱于头号方案。"
-    return {
-        "name": blueprint["name"],
-        "positioning": blueprint["positioning"],
-        "score": candidate["score"],
-        "scores": candidate["scores"],
-        "note": note,
-    }
-
-
-def build_engine_meta(
-    pool: list[dict[str, Any]],
-    recent_blueprints: list[str],
-    config: dict[str, Any],
-) -> dict[str, Any]:
-    group_summary = []
-    for group, source_ids in FACTORY_SOURCE_GROUPS.items():
-        count = sum(1 for item in pool if item["group"] == group)
-        group_summary.append(
-            {
-                "name": SOURCE_GROUP_LABELS[group],
-                "count": count,
-                "sources": [config["sources"][source_id]["label"] for source_id in source_ids if source_id in config["sources"]],
-            }
-        )
-
-    return {
-        "sources": group_summary,
-        "collectionRules": [
-            "优先抓产品榜单、科技媒体、中文讨论三类高信号源，而不是只看单个平台热搜。",
-            "同一标题会先去重，再按商业价值、动作性和跨源重复度加权。",
-            "最近 48 小时优先，旧信号自动降权，保证方案更贴近今天的真实机会。",
-        ],
-        "qualityRules": [
-            "至少要求两个来源组同时命中，避免被单一热点误导。",
-            "自动过滤体育、明星、纯情绪八卦等不适合做工具产品的噪声。",
-            "读取最近历史方案，对高相似方向降权，尽量减少重复生成。",
-        ],
-        "buildRules": [
-            "优先选择微信小程序和 H5 可同时落地的方向，再考虑抖音小程序和 App 壳。",
-            "优先模板化、轻数据、可订阅的产品，而不是重服务、重审核或重线下履约的产品。",
-            f"当前历史记忆里已有 {len(recent_blueprints)} 条已生成方向记录，会参与去重。",
-        ],
-    }
-
-
-def load_recent_blueprints(history_dir: Path | None) -> list[str]:
+def load_recent_creation_ids(history_dir: Path | None) -> list[str]:
     if history_dir is None:
         return []
     index_path = history_dir / "index.json"
@@ -812,7 +1094,7 @@ def load_recent_blueprints(history_dir: Path | None) -> list[str]:
         return []
 
     recent: list[str] = []
-    for entry in entries[:21]:
+    for entry in entries[:30]:
         raw_path = clean_text(entry.get("path"))
         if not raw_path:
             continue
@@ -823,22 +1105,28 @@ def load_recent_blueprints(history_dir: Path | None) -> list[str]:
             digest = json.loads(digest_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             continue
-        blueprint_id = clean_text(digest.get("miniappFactory", {}).get("todayPlan", {}).get("blueprintId"))
-        if blueprint_id:
-            recent.append(blueprint_id)
+
+        factory = digest.get("miniappFactory", {})
+        primary_id = clean_text(factory.get("primaryCreationId"))
+        if primary_id:
+            recent.append(primary_id)
+            continue
+        legacy_id = clean_text(factory.get("todayPlan", {}).get("blueprintId"))
+        if legacy_id:
+            recent.append(legacy_id)
     return recent
 
 
 def fallback_candidate(now: datetime) -> dict[str, Any]:
-    blueprint = BLUEPRINTS[0]
+    theme = THEMES[0]
     return {
-        "blueprint": blueprint,
+        "theme": theme,
         "score": 60.0,
-        "scores": {"demand": 48, "launch": 92, "viral": 82, "commercial": 80, "fit": 96},
+        "scores": {"demand": 54, "buildability": 80, "boldness": 84, "aiLeverage": 88},
         "evidence": [],
-        "matchedGroups": [],
+        "matchedGroups": ["product", "operator"],
         "matchedSources": [],
-        "matchedTerms": [],
+        "matchedTerms": ["平台"],
         "repeatPenalty": 0,
         "windowLabel": build_window_label(now),
     }
@@ -857,10 +1145,10 @@ def diversify_evidence(evidence: list[dict[str, Any]], limit: int) -> list[dict[
     return diversified
 
 
-def build_signal_reason(title: str, matches: list[str]) -> str:
+def build_signal_reason(title: str, matches: list[str], theme: dict[str, Any]) -> str:
     if not matches:
-        return "说明今天这类需求仍有活跃讨论。"
-    return f"标题直接命中“{matches[0]}”相关需求，适合转成轻工具功能。"
+        return "说明今天这类需求仍在继续放大。"
+    return f"标题命中“{matches[0]}”，说明 {theme['demand_gap']}"
 
 
 def keyword_hits(text: str, keywords: tuple[str, ...] | list[str]) -> list[str]:
@@ -869,6 +1157,18 @@ def keyword_hits(text: str, keywords: tuple[str, ...] | list[str]) -> list[str]:
 
 def has_any(text: str, keywords: tuple[str, ...] | list[str]) -> bool:
     return any(keyword.lower() in text for keyword in keywords)
+
+
+def unique_preserving_order(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for value in values:
+        key = value.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        ordered.append(value)
+    return ordered
 
 
 def is_noise_title(title: str) -> bool:
@@ -901,12 +1201,19 @@ def parse_timestamp(value: str | None) -> datetime | None:
     return None
 
 
+def next_run_label(now: datetime) -> str:
+    tomorrow = now.replace(hour=7, minute=0, second=0, microsecond=0)
+    if now >= tomorrow:
+        tomorrow += timedelta(days=1)
+    return tomorrow.strftime("%Y-%m-%d 07:00")
+
+
 def clock(now: datetime) -> str:
     return now.strftime("%Y-%m-%d %H:%M")
 
 
 def build_window_label(now: datetime) -> str:
-    start = now - timedelta(hours=48)
+    start = now - timedelta(hours=36)
     return f"{start.strftime('%m-%d %H:%M')} - {now.strftime('%m-%d %H:%M')}"
 
 
