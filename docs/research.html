@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>市场信号研究台 | AI 自动造小程序系统</title>
+    <meta
+      name="description"
+      content="保留原有的市场与热点研究面板，用来支撑每日小程序方案的判断过程。"
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=IBM+Plex+Sans+SC:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/app.css" />
+    <script src="./assets/app.js" defer></script>
+  </head>
+  <body data-page="digest">
+    <div class="app-shell">
+      <aside class="app-sidebar">
+        <div class="sidebar-brand">
+          <p class="eyebrow">Signal Desk</p>
+          <h1>市场信号研究台</h1>
+          <p class="sidebar-copy">
+            这里保留原来的研究台，用来观察市场、热点和技术信号的全量动态，为首页的小程序方案提供依据。
+          </p>
+        </div>
+
+        <nav class="page-nav" aria-label="站点菜单">
+          <a class="page-link" href="./index.html">
+            <span class="page-link-title">今日方案</span>
+            <span class="page-link-copy">回到 AI 自动造小程序系统首页</span>
+          </a>
+          <a class="page-link is-active" href="./research.html">
+            <span class="page-link-title">市场信号</span>
+            <span class="page-link-copy">查看热点、重点排序、多视角评论与链路分析</span>
+          </a>
+          <a class="page-link" href="./monitor.html">
+            <span class="page-link-title">原始监控</span>
+            <span class="page-link-copy">检查抓取覆盖、标题质量与来源稳定性</span>
+          </a>
+          <a class="page-link" href="./about.html">
+            <span class="page-link-title">系统说明</span>
+            <span class="page-link-copy">查看自动生成与发布链路说明</span>
+          </a>
+        </nav>
+
+        <section class="sidebar-note">
+          <p class="sidebar-note-title">当前研究窗口</p>
+          <p class="sidebar-note-copy" id="sidebar-window">正在读取最新快照...</p>
+        </section>
+      </aside>
+
+      <main class="app-main">
+        <div class="update-banner" id="window-banner">正在读取最新研究快照...</div>
+
+        <header class="main-header">
+          <div class="hero-copy">
+            <p class="eyebrow" id="hero-kicker">全天候信号跟踪</p>
+            <h2 class="main-title" id="hero-title">加载中</h2>
+            <p class="hero-lead" id="hero-lead"></p>
+          </div>
+          <div class="header-actions">
+            <button class="ghost-button" id="history-open" type="button">历史快照</button>
+            <div class="status-pill" id="generated-badge">读取中</div>
+            <div class="latest-pill" id="latest-indicator">Latest</div>
+          </div>
+        </header>
+
+        <section class="pulse-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Market Pulse</p>
+              <h3>全局重点脉冲</h3>
+            </div>
+            <p class="section-hint" id="pulse-window"></p>
+          </div>
+          <p class="pulse-copy" id="pulse-headline"></p>
+          <div class="pulse-grid" id="pulse-grid"></div>
+        </section>
+
+        <section class="tab-strip" id="category-tabs" aria-label="板块切换"></section>
+
+        <section class="overview-grid">
+          <article class="summary-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Board View</p>
+                <h3>主线与策略</h3>
+              </div>
+              <div class="metric-inline">
+                <span class="metric-chip" id="story-total">-</span>
+                <span class="metric-chip" id="priority-total">-</span>
+              </div>
+            </div>
+            <div class="summary-stack">
+              <div class="summary-block">
+                <span class="summary-label">周期判断</span>
+                <p id="cycle-view"></p>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">策略建议</span>
+                <p id="strategy-take"></p>
+              </div>
+              <div class="summary-meta-grid">
+                <div class="metric-card">
+                  <span class="metric-label">统计窗口</span>
+                  <strong id="metric-window">-</strong>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-label">更新时间</span>
+                  <strong id="metric-generated">-</strong>
+                </div>
+                <div class="metric-card">
+                  <span class="metric-label">版本状态</span>
+                  <strong id="metric-mode">-</strong>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Linkage Map</p>
+                <h3>联想链路</h3>
+              </div>
+              <p class="section-hint">不是只看标题，而是拆出更有价值的后续传导路径</p>
+            </div>
+            <div class="linkage-list" id="linkage-list"></div>
+          </article>
+        </section>
+
+        <section class="signal-grid">
+          <article class="signal-card bullish-card">
+            <p class="signal-label">顺风线索</p>
+            <p class="signal-copy" id="bullish-copy"></p>
+          </article>
+          <article class="signal-card bearish-card">
+            <p class="signal-label">逆风线索</p>
+            <p class="signal-copy" id="bearish-copy"></p>
+          </article>
+          <article class="signal-card watch-card">
+            <p class="signal-label">继续观察</p>
+            <p class="signal-copy" id="watch-copy"></p>
+          </article>
+        </section>
+
+        <section class="analyst-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Pricing Logic</p>
+              <h3>定价逻辑</h3>
+            </div>
+            <p class="lens-copy" id="lens-copy"></p>
+          </div>
+          <p class="analyst-copy" id="analyst-copy"></p>
+        </section>
+
+        <section class="feed-grid">
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Full Feed</p>
+                <h3>全量动态</h3>
+              </div>
+              <p class="section-hint">按时间排序，展示该板块在当前窗口内抓到的全部动态</p>
+            </div>
+            <div class="stories-list stories-list--full" id="all-stories-list"></div>
+          </article>
+
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Impact Rank</p>
+                <h3>重点影响排序</h3>
+              </div>
+              <p class="section-hint">按影响程度而不是发布时间进行排序</p>
+            </div>
+            <div class="stories-list stories-list--priority" id="priority-stories-list"></div>
+          </article>
+        </section>
+
+        <section class="panel-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Multi View</p>
+              <h3>多视角观察</h3>
+            </div>
+            <p class="section-hint">同一批信号从不同角色视角拆开看，避免只剩一个结论</p>
+          </div>
+          <div class="comments-list" id="comments-list"></div>
+        </section>
+
+        <section class="panel-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Sources</p>
+              <h3>当前板块使用来源</h3>
+            </div>
+            <p class="section-hint">中文聚合源与国际媒体并行</p>
+          </div>
+          <div id="source-list" class="source-list"></div>
+          <div class="raw-links">
+            <a href="./data/latest/digest.json" target="_blank" rel="noreferrer">查看最新 digest.json</a>
+            <a href="./data/raw/latest.json" target="_blank" rel="noreferrer">查看原始 raw.json</a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="history-modal hidden" id="history-modal" aria-hidden="true">
+      <div class="history-backdrop" id="history-close"></div>
+      <div class="history-dialog">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Archive</p>
+            <h3>历史快照</h3>
+          </div>
+          <button class="ghost-button" id="history-close-button" type="button">关闭</button>
+        </div>
+        <div class="history-list" id="history-list"></div>
+      </div>
+    </div>
+  </body>
+</html>

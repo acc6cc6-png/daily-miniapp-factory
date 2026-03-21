@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI 自动造小程序系统</title>
+    <meta
+      name="description"
+      content="每天根据真实热点、产品趋势与用户讨论，自动生成一个可开发、可上线的小程序方案。"
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=IBM+Plex+Sans+SC:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/app.css" />
+    <script src="./assets/factory.js" defer></script>
+  </head>
+  <body data-page="factory">
+    <div class="app-shell">
+      <aside class="app-sidebar">
+        <div class="sidebar-brand">
+          <p class="eyebrow">Daily Factory</p>
+          <h1>AI 自动造小程序系统</h1>
+          <p class="sidebar-copy">
+            先抓取高信号热点，再过滤商业价值与实现成本，最后每天产出一个最适合立刻开做的小程序方案。
+          </p>
+        </div>
+
+        <nav class="page-nav" aria-label="站点菜单">
+          <a class="page-link is-active" href="./index.html">
+            <span class="page-link-title">今日方案</span>
+            <span class="page-link-copy">查看今天最值得做的小程序方案与市场依据</span>
+          </a>
+          <a class="page-link" href="./research.html">
+            <span class="page-link-title">市场信号</span>
+            <span class="page-link-copy">查看原有的新闻研究面板与重点动态排序</span>
+          </a>
+          <a class="page-link" href="./monitor.html">
+            <span class="page-link-title">原始监控</span>
+            <span class="page-link-copy">检查抓取源、原始标题与覆盖情况</span>
+          </a>
+          <a class="page-link" href="./about.html">
+            <span class="page-link-title">系统说明</span>
+            <span class="page-link-copy">了解采集策略、质量规则与 GitHub Pages 发布方式</span>
+          </a>
+        </nav>
+
+        <section class="sidebar-note">
+          <p class="sidebar-note-title">当前信号窗口</p>
+          <p class="sidebar-note-copy" id="sidebar-window">正在读取今日方案...</p>
+        </section>
+      </aside>
+
+      <main class="app-main">
+        <div class="update-banner" id="window-banner">正在读取今日自动生成小程序方案...</div>
+
+        <header class="main-header">
+          <div class="hero-copy">
+            <p class="eyebrow" id="factory-eyebrow">Daily Miniapp Build</p>
+            <h2 class="main-title" id="factory-title">加载中</h2>
+            <p class="hero-lead" id="factory-lead"></p>
+          </div>
+          <div class="header-actions">
+            <button class="ghost-button" id="history-open" type="button">历史方案</button>
+            <div class="status-pill" id="generated-badge">读取中</div>
+            <div class="latest-pill" id="latest-indicator">Latest</div>
+          </div>
+        </header>
+
+        <section class="factory-score-grid" id="score-grid"></section>
+
+        <section class="overview-grid">
+          <article class="summary-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Today Plan</p>
+                <h3 id="plan-name">今日自动生成小程序方案</h3>
+              </div>
+              <span class="metric-chip" id="plan-mode">规则引擎</span>
+            </div>
+            <div class="summary-stack">
+              <div class="summary-block">
+                <span class="summary-label">产品定位</span>
+                <p id="plan-positioning"></p>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">核心解决什么需求</span>
+                <p id="core-need"></p>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">为什么今天适合做</span>
+                <p id="why-today"></p>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">市场依据</span>
+                <div class="stack-list" id="market-basis"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Go To Market</p>
+                <h3>谁会先用、怎么推</h3>
+              </div>
+            </div>
+            <div class="summary-stack">
+              <div class="summary-block">
+                <span class="summary-label">目标用户</span>
+                <p id="audience-copy"></p>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">推广方式</span>
+                <p id="promotion-copy"></p>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">盈利模式</span>
+                <p id="monetization-copy"></p>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="factory-grid">
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Product Scope</p>
+                <h3>核心功能</h3>
+              </div>
+              <p class="section-hint">固定输出 3 到 5 个可直接排进需求单的功能</p>
+            </div>
+            <div class="card-list" id="features-list"></div>
+          </article>
+
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Page Map</p>
+                <h3>页面结构</h3>
+              </div>
+              <p class="section-hint">按首发版本收敛为最小可上线页面集</p>
+            </div>
+            <div class="card-list" id="pages-list"></div>
+          </article>
+        </section>
+
+        <section class="factory-grid">
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">User Flow</p>
+                <h3>关键交互逻辑</h3>
+              </div>
+              <p class="section-hint">展示从打开到产出结果的主链路</p>
+            </div>
+            <div class="stack-list" id="interaction-list"></div>
+          </article>
+
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Implementation</p>
+                <h3>前端 / 后端实现思路</h3>
+              </div>
+              <p class="section-hint">优先微信小程序 + H5，再扩到抖音和 App 壳</p>
+            </div>
+            <div class="summary-stack">
+              <div class="summary-block">
+                <span class="summary-label">前端</span>
+                <p id="frontend-copy"></p>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">后端</span>
+                <p id="backend-copy"></p>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">首发平台</span>
+                <div class="pill-list" id="platform-list"></div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Signal Evidence</p>
+              <h3>今日命中的真实信号</h3>
+            </div>
+            <p class="section-hint">只展示真正参与今天方案评分的高信号来源</p>
+          </div>
+          <div class="card-list" id="evidence-list"></div>
+        </section>
+
+        <section class="factory-grid">
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Candidate Board</p>
+                <h3>候选池</h3>
+              </div>
+              <p class="section-hint">每天只选一个，但会保留前几名备用方向</p>
+            </div>
+            <div class="card-list" id="candidate-list"></div>
+          </article>
+
+          <article class="panel-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Engine</p>
+                <h3>采集与质量机制</h3>
+              </div>
+              <p class="section-hint">解决“怎么更快采集”和“怎么提高质量”这两个核心问题</p>
+            </div>
+            <div class="summary-stack">
+              <div class="summary-block">
+                <span class="summary-label">信号源分布</span>
+                <div class="card-list card-list--compact" id="engine-source-list"></div>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">采集效率规则</span>
+                <div class="stack-list" id="collection-rules"></div>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">质量控制规则</span>
+                <div class="stack-list" id="quality-rules"></div>
+              </div>
+              <div class="summary-block">
+                <span class="summary-label">生成落地规则</span>
+                <div class="stack-list" id="build-rules"></div>
+              </div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <div class="history-modal hidden" id="history-modal" aria-hidden="true">
+      <div class="history-backdrop" id="history-close"></div>
+      <div class="history-dialog">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Archive</p>
+            <h3>历史方案快照</h3>
+          </div>
+          <button class="ghost-button" id="history-close-button" type="button">关闭</button>
+        </div>
+        <div class="history-list" id="history-list"></div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,63 @@
+name: Daily Miniapp Factory
+
+on:
+  schedule:
+    - cron: "5 23 * * *" # Asia/Shanghai 07:05
+    - cron: "30 4 * * *" # Asia/Shanghai 12:30
+    - cron: "5 9 * * *" # Asia/Shanghai 17:05
+    - cron: "35 13 * * *" # Asia/Shanghai 21:35
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build digest
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+        run: python scripts/daily_digest_v2.py
+
+      - name: Commit generated data
+        run: |
+          git config user.name "daily-miniapp-bot"
+          git config user.email "daily-miniapp-bot@users.noreply.github.com"
+          git add docs/data
+          git commit -m "chore: refresh daily miniapp plan" || exit 0
+          git pull --rebase origin main
+          git push
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>系统说明 | AI 自动造小程序系统</title>
+    <meta
+      name="description"
+      content="了解每日小程序方案系统的采集策略、质量控制、自动生成与 GitHub Pages 发布流程。"
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700&family=IBM+Plex+Sans+SC:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./assets/app.css" />
+  </head>
+  <body data-page="about">
+    <div class="app-shell">
+      <aside class="app-sidebar">
+        <div class="sidebar-brand">
+          <p class="eyebrow">System Notes</p>
+          <h1>AI 自动造小程序系统</h1>
+          <p class="sidebar-copy">
+            这不是单纯的热点站点，而是一条“采集信号 -> 过滤需求 -> 生成方案 -> 发布到 GitHub Pages”的自动流水线。
+          </p>
+        </div>
+
+        <nav class="page-nav" aria-label="站点菜单">
+          <a class="page-link" href="./index.html">
+            <span class="page-link-title">今日方案</span>
+            <span class="page-link-copy">查看今天最值得做的小程序方案</span>
+          </a>
+          <a class="page-link" href="./research.html">
+            <span class="page-link-title">市场信号</span>
+            <span class="page-link-copy">查看用来支撑方案判断的研究台</span>
+          </a>
+          <a class="page-link" href="./monitor.html">
+            <span class="page-link-title">原始监控</span>
+            <span class="page-link-copy">排查抓取源和原始标题质量</span>
+          </a>
+          <a class="page-link is-active" href="./about.html">
+            <span class="page-link-title">系统说明</span>
+            <span class="page-link-copy">了解采集、评分、去重和部署方式</span>
+          </a>
+        </nav>
+
+        <section class="sidebar-note">
+          <p class="sidebar-note-title">当前发布方式</p>
+          <p class="sidebar-note-copy">
+            GitHub Actions 定时运行 Python 脚本，生成 `docs/data/latest/digest.json` 后由 GitHub Pages 直接发布。
+          </p>
+        </section>
+      </aside>
+
+      <main class="app-main about-layout">
+        <div class="update-banner">
+          当前默认在北京时间 07:05、12:30、17:05、21:35 自动刷新，也支持在 GitHub Actions 中手动触发。
+        </div>
+
+        <section class="summary-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Architecture</p>
+              <h3>系统结构</h3>
+            </div>
+          </div>
+          <div class="about-copy">
+            <p>
+              站点前端是纯静态页面：首页读取 `digest.json` 里的 `miniappFactory` 字段，研究台继续读取同一份
+              `digest.json` 的研究结果，监控页读取 `raw/latest.json`。
+            </p>
+            <p>
+              后端脚本先抓取多类信号源，再对热点做去重、过滤、商业价值打分、方向匹配和历史去重，最后生成今天最值得做的小程序方案。
+            </p>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Collection</p>
+              <h3>怎么更高效地采集信息</h3>
+            </div>
+          </div>
+          <ol class="step-list">
+            <li>优先抓三类高信号源：产品榜单与开发者社区、科技媒体、中文热点与用户讨论。</li>
+            <li>先去掉体育、明星、纯娱乐八卦，再按商业关键词、动作关键词和跨源重复度加权。</li>
+            <li>只保留最近 48 小时内仍有价值的信号，避免旧热点污染今日方案。</li>
+          </ol>
+        </section>
+
+        <section class="panel-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Quality</p>
+              <h3>怎么提高生成效率和质量</h3>
+            </div>
+          </div>
+          <ol class="step-list">
+            <li>用预设蓝图库约束输出，确保每个方案都能落回“需求、功能、页面、交互、实现、推广”这条主链。</li>
+            <li>至少要求两个来源组同时命中，降低“单一热点误导”的风险。</li>
+            <li>读取历史快照，对最近重复方向降权，尽量保证每天都有新主题。</li>
+            <li>如果仓库配置了 `OPENAI_API_KEY`，会在规则引擎选题后再用模型做一轮结构化润色。</li>
+          </ol>
+        </section>
+
+        <section class="panel-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Publish Flow</p>
+              <h3>发布流程</h3>
+            </div>
+          </div>
+          <ol class="step-list">
+            <li>GitHub Actions 运行 `scripts/daily_digest_v2.py`。</li>
+            <li>脚本会同时生成研究结果、原始快照和今日小程序方案，并写入 `docs/data`。</li>
+            <li>同一条工作流会把 `docs/` 打包并发布到 GitHub Pages。</li>
+          </ol>
+        </section>
+
+        <section class="panel-card">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Local Run</p>
+              <h3>本地运行与密钥</h3>
+            </div>
+          </div>
+          <div class="about-copy">
+            <p>
+              本地可以直接运行 `py scripts/daily_digest_v2.py`。如果 `.env.local` 或 GitHub Secrets 里配置了
+              `OPENAI_API_KEY`，系统会尝试生成更完整的自然语言版本；没有密钥也能正常走规则引擎。
+            </p>
+            <p>
+              公开仓库不要提交真实密钥。Pages 站点只读取静态 JSON，不依赖常驻后端。
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
