@@ -3,6 +3,7 @@ name: Daily Miniapp Factory
 on:
   schedule:
     - cron: "0 23 * * *" # Asia/Shanghai 07:00
+    - cron: "30 4 * * *" # Asia/Shanghai 12:30
   workflow_dispatch:
 
 permissions:

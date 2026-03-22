@@ -3,7 +3,7 @@
 import json
 import os
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +11,9 @@ try:
     from openai import OpenAI
 except Exception:
     OpenAI = None
+
+
+TZ = timezone(timedelta(hours=8))
 
 
 FACTORY_SOURCE_GROUPS: dict[str, tuple[str, ...]] = {
@@ -253,7 +256,7 @@ THEMES: list[dict[str, Any]] = [
             {"name": "追踪页", "purpose": "查看哪些变化已处理、哪些还在堆积。"},
         ],
         "workflow": [
-            "系统先把过去 36 小时的变化信号去重、分类、标记影响范围。",
+            "系统先按 07:00 / 12:30 对应时间窗抓取变化信号，再去重、分类、标记影响范围。",
             "用户打开后直接看到今天必须处理的变化，而不是一屏新闻。",
             "选中某条变化后，一键生成客户通知、执行清单和页面修改建议。",
             "执行结果沉淀进模板库，下一次同类变化直接复用。",
@@ -533,9 +536,9 @@ def build_miniapp_factory(
 
     factory = {
         "title": "AI 自动造物系统",
-        "subtitle": "每天 07:00 根据真实变化生成多个今天值得造的新产品 / 新工具。",
+        "subtitle": "每天 07:00 / 12:30 根据对应时间窗自动生成新的重点变化与可造方向。",
         "generatedAt": clock(now),
-        "scheduledAt": "07:00 Asia/Shanghai",
+        "scheduledAt": "07:00 / 12:30 Asia/Shanghai",
         "windowLabel": build_window_label(now),
         "mode": "heuristic",
         "summary": daily_brief["headline"],
@@ -561,7 +564,8 @@ def build_miniapp_factory(
 def collect_signal_items(raw_by_source: dict[str, list[dict[str, Any]]], now: datetime) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
     seen_titles: set[str] = set()
-    window_start = (now - timedelta(hours=36)).replace(tzinfo=None)
+    window_start = session_window_start(now)
+    window_end = session_window_end(now)
 
     for group, source_ids in FACTORY_SOURCE_GROUPS.items():
         for source_id in source_ids:
@@ -579,6 +583,8 @@ def collect_signal_items(raw_by_source: dict[str, list[dict[str, Any]]], now: da
                 published_at = clean_text(item.get("publishedAt")) or None
                 published_dt = parse_timestamp(published_at)
                 if published_dt is not None and published_dt < window_start:
+                    continue
+                if published_dt is not None and published_dt > window_end:
                     continue
 
                 seen_titles.add(normalized)
@@ -763,7 +769,7 @@ def build_creation(candidate: dict[str, Any], now: datetime) -> dict[str, Any]:
         first_version = first_version[2:].strip("， ")
     create_what = f"所以今天适合造「{name}」：{theme['tagline']} 首版范围是 {first_version}。"
     why_now = (
-        f"过去 36 小时里，这条需求不是单点热度，而是被 {max(1, len(candidate['matchedSources']))} 个来源反复放大。"
+        f"在当前版次时间窗里，这条需求不是单点热度，而是被 {max(1, len(candidate['matchedSources']))} 个来源反复放大。"
         f" {theme['demand_gap']}"
     )
 
@@ -925,7 +931,7 @@ def build_engine_meta(pool: list[dict[str, Any]], recent_ids: list[str], config:
         "sources": sources,
         "collectionRules": [
             "不再铺大众新闻，优先抓产品发布、行业变化、商家动作、用户需求这几类高价值信号。",
-            "过去 36 小时优先，旧线索自动降权，避免页面越来越像历史新闻墙。",
+            "严格按 07:00 / 12:30 对应窗口取数，窗口外的旧线索自动降权或剔除。",
             "标题先去重，再按动作性、商业价值、跨源重复度加权。",
         ],
         "qualityRules": [
@@ -934,7 +940,8 @@ def build_engine_meta(pool: list[dict[str, Any]], recent_ids: list[str], config:
             f"最近历史里已经记录了 {len(recent_ids)} 个方向，会参与去重和降权。",
         ],
         "buildRules": [
-            "默认每天 07:00 自动生成，优先给出多个今天值得造的方向，而不是只挑 1 个。",
+            "默认每天 07:00 和 12:30 自动生成，优先给出多个今天值得造的方向，而不是只挑 1 个。",
+            "07:00 用昨收后到 07:00 的窗口；12:30 用 07:00 到 12:30 的窗口。",
             "每个方向都必须写清楚：为什么现在、造什么、谁会用、如何让 AI 继续接力。",
             "优先执行型、决策型、交付型工具，少做纯信息聚合页。",
         ],
@@ -1195,17 +1202,27 @@ def parse_timestamp(value: str | None) -> datetime | None:
         return None
     for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S"):
         try:
-            return datetime.strptime(value, fmt)
+            return datetime.strptime(value, fmt).replace(tzinfo=TZ)
         except ValueError:
             continue
     return None
 
 
+def shanghai_now(now: datetime) -> datetime:
+    if now.tzinfo is None:
+        return now.replace(tzinfo=TZ)
+    return now.astimezone(TZ)
+
+
 def next_run_label(now: datetime) -> str:
-    tomorrow = now.replace(hour=7, minute=0, second=0, microsecond=0)
-    if now >= tomorrow:
-        tomorrow += timedelta(days=1)
-    return tomorrow.strftime("%Y-%m-%d 07:00")
+    now = shanghai_now(now)
+    morning = now.replace(hour=7, minute=0, second=0, microsecond=0)
+    midday = now.replace(hour=12, minute=30, second=0, microsecond=0)
+    if now < morning:
+        return morning.strftime("%Y-%m-%d 07:00")
+    if now < midday:
+        return midday.strftime("%Y-%m-%d 12:30")
+    return (morning + timedelta(days=1)).strftime("%Y-%m-%d 07:00")
 
 
 def clock(now: datetime) -> str:
@@ -1213,8 +1230,43 @@ def clock(now: datetime) -> str:
 
 
 def build_window_label(now: datetime) -> str:
-    start = now - timedelta(hours=36)
-    return f"{start.strftime('%m-%d %H:%M')} - {now.strftime('%m-%d %H:%M')}"
+    now = shanghai_now(now)
+    start = session_window_start(now)
+    end = session_window_end(now)
+    return f"{start.strftime('%m-%d %H:%M')} - {end.strftime('%m-%d %H:%M')}"
+
+
+def previous_a_share_close(now: datetime) -> datetime:
+    now = shanghai_now(now)
+    anchor = now.replace(hour=15, minute=0, second=0, microsecond=0)
+    if now < anchor:
+        anchor -= timedelta(days=1)
+    while anchor.weekday() >= 5:
+        anchor -= timedelta(days=1)
+    return anchor
+
+
+def session_window_start(now: datetime) -> datetime:
+    now = shanghai_now(now)
+    window_end = session_window_end(now)
+    morning = window_end.replace(hour=7, minute=0, second=0, microsecond=0)
+    midday = window_end.replace(hour=12, minute=30, second=0, microsecond=0)
+    if window_end <= morning:
+        return previous_a_share_close(window_end)
+    if window_end <= midday:
+        return morning
+    return midday
+
+
+def session_window_end(now: datetime) -> datetime:
+    now = shanghai_now(now)
+    morning = now.replace(hour=7, minute=0, second=0, microsecond=0)
+    midday = now.replace(hour=12, minute=30, second=0, microsecond=0)
+    if morning <= now < midday:
+        return morning
+    if now >= midday:
+        return midday
+    return now
 
 
 def clamp_score(value: float | int) -> int:

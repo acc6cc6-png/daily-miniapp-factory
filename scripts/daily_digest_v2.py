@@ -439,8 +439,11 @@ MICRO_STORY_TERMS = (
 def main() -> int:
     load_local_env(ROOT / ".env.local")
     config = load_json(CONFIG_PATH)
-    now = datetime.now(TZ)
-    print(f"[daily-digest-v2] build started at {now.isoformat()}")
+    runtime_now = datetime.now(TZ)
+    now = market_window_end(runtime_now)
+    print(f"[daily-digest-v2] build started at {runtime_now.isoformat()}")
+    if now != runtime_now:
+        print(f"[daily-digest-v2] edition cutoff -> {now.isoformat()}")
 
     raw_by_source = fetch_all_sources(config)
     raw_snapshot = build_raw_snapshot(config, raw_by_source, now)
@@ -904,15 +907,18 @@ def collect_category_items(
             continue
         source_items = sorted(
             source_items,
-            key=lambda item: source_item_sort_key(category, item, window_start),
+            key=lambda item: source_item_sort_key(category, item, window_start, now),
             reverse=True,
         )
         for item in source_items[:per_source_limit]:
             dedupe_key = normalize_dedupe_key(item["title"], item["url"])
             if dedupe_key in seen:
                 continue
-            seen.add(dedupe_key)
             enriched = dict(item)
+            published_dt = parse_timestamp(enriched.get("publishedAt"))
+            if published_dt is not None and published_dt > now:
+                continue
+            seen.add(dedupe_key)
             enriched["sourcePriority"] = priority
             enriched["signal"] = classify_signal(item["title"])
             enriched["relevanceScore"] = category_relevance_score(category, item["title"])
@@ -936,8 +942,8 @@ def collect_category_items(
     ]
     backups = [item for item in collected if item not in preferred]
 
-    ranked_preferred = sorted(preferred, key=lambda item: selection_sort_key(item, window_start), reverse=True)
-    ranked_backups = sorted(backups, key=lambda item: selection_sort_key(item, window_start), reverse=True)
+    ranked_preferred = sorted(preferred, key=lambda item: selection_sort_key(item, window_start, now), reverse=True)
+    ranked_backups = sorted(backups, key=lambda item: selection_sort_key(item, window_start, now), reverse=True)
 
     chosen = ranked_preferred[:limit]
     minimum_fill = min(limit, max(8, limit // 3))
@@ -965,7 +971,7 @@ def build_story_records(
     for item in items:
         signal = item.get("signal") or classify_signal(item["title"])
         impact_score = story_impact_score(category, item, now, window_start)
-        impact_reason = build_impact_reason(category, item, impact_score, window_start)
+        impact_reason = build_impact_reason(category, item, impact_score, window_start, now)
         stories.append(
             {
                 "title": item["title"],
@@ -985,7 +991,7 @@ def build_story_records(
                 "source": item["sourceLabel"],
                 "sourceKind": item.get("sourceType"),
                 "publishedAt": item.get("publishedAt"),
-                "inWindow": is_within_window(item.get("publishedAt"), window_start),
+                "inWindow": is_within_window(item.get("publishedAt"), window_start, now),
             }
         )
     stories.sort(key=story_time_sort_key, reverse=True)
@@ -1501,24 +1507,33 @@ def build_template_comments(
     return comments
 
 
-def selection_sort_key(item: dict[str, Any], window_start: datetime) -> tuple[float, int, str, int, int]:
+def selection_sort_key(
+    item: dict[str, Any],
+    window_start: datetime,
+    window_end: datetime,
+) -> tuple[float, int, str, int, int]:
     return (
         float(item.get("selectionScore", 0)),
-        1 if is_within_window(item.get("publishedAt"), window_start) else 0,
+        1 if is_within_window(item.get("publishedAt"), window_start, window_end) else 0,
         item.get("publishedAt") or "",
         -int(item.get("sourcePriority") or 99),
         -int(item.get("rank") or 9999),
     )
 
 
-def source_item_sort_key(category: dict[str, Any], item: dict[str, Any], window_start: datetime) -> tuple[int, int, str, int]:
+def source_item_sort_key(
+    category: dict[str, Any],
+    item: dict[str, Any],
+    window_start: datetime,
+    window_end: datetime,
+) -> tuple[int, int, str, int]:
     title = item.get("title", "")
     relevance_score = category_relevance_score(category, title)
     priority_score = market_priority_score(title)
     open_score = a_share_open_score(title)
     return (
         relevance_score + priority_score + open_score,
-        1 if is_within_window(item.get("publishedAt"), window_start) else 0,
+        1 if is_within_window(item.get("publishedAt"), window_start, window_end) else 0,
         item.get("publishedAt") or "",
         -(item.get("rank") or 9999),
     )
@@ -1648,7 +1663,7 @@ def story_impact_score(
 ) -> int:
     title = clean_text(item["title"]).lower()
     score = 12
-    if is_within_window(item.get("publishedAt"), window_start):
+    if is_within_window(item.get("publishedAt"), window_start, now):
         score += 24
     elif item.get("publishedAt") is None:
         score += 10
@@ -1732,9 +1747,10 @@ def build_impact_reason(
     item: dict[str, Any],
     impact_score: int,
     window_start: datetime,
+    now: datetime,
 ) -> str:
     lens_focus = shorten_title(category["lens"], 18)
-    if is_within_window(item.get("publishedAt"), window_start):
+    if is_within_window(item.get("publishedAt"), window_start, now):
         window_copy = "位于昨收后的主窗口"
     else:
         window_copy = "不在主窗口但仍有跟踪价值"
@@ -1784,6 +1800,27 @@ def rebuild_history_index() -> list[dict[str, str]]:
 
 
 def market_window_start(now: datetime) -> datetime:
+    window_end = market_window_end(now)
+    morning = window_end.replace(hour=7, minute=0, second=0, microsecond=0)
+    midday = window_end.replace(hour=12, minute=30, second=0, microsecond=0)
+    if window_end <= morning:
+        return previous_a_share_close(window_end)
+    if window_end <= midday:
+        return morning
+    return midday
+
+
+def market_window_end(now: datetime) -> datetime:
+    morning = now.replace(hour=7, minute=0, second=0, microsecond=0)
+    midday = now.replace(hour=12, minute=30, second=0, microsecond=0)
+    if morning <= now < midday:
+        return morning
+    if now >= midday:
+        return midday
+    return now
+
+
+def previous_a_share_close(now: datetime) -> datetime:
     anchor = now.replace(hour=15, minute=0, second=0, microsecond=0)
     if now < anchor:
         anchor -= timedelta(days=1)
@@ -1859,9 +1896,9 @@ def parse_timestamp(value: str | None) -> datetime | None:
     return None
 
 
-def is_within_window(value: str | None, window_start: datetime) -> bool:
+def is_within_window(value: str | None, window_start: datetime, window_end: datetime) -> bool:
     dt = parse_timestamp(value)
-    return dt is not None and dt >= window_start
+    return dt is not None and window_start <= dt <= window_end
 
 
 def story_time_sort_key(story: dict[str, Any]) -> tuple[int, str, int]:

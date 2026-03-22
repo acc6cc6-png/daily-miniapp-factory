@@ -1,9 +1,9 @@
 {
   "site": {
     "title": "AI 自动造物系统",
-    "subtitle": "每日 07:00 自动生成多个今天值得造的新产品 / 新工具",
+    "subtitle": "每日 07:00 / 12:30 按对应窗口自动更新重点消息与可造方向",
     "timezone": "Asia/Shanghai",
-    "edition_time": "07:00"
+    "edition_time": "07:00 / 12:30"
   },
   "persona_count": 25,
   "personas": [
